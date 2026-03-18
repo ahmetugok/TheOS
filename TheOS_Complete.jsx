@@ -412,7 +412,8 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
   const totalRef = useRef(PRESETS[0].sec);
 
   const progress = 1 - secs / totalRef.current;
-  const SIZE = focusMode ? 260 : 180;
+  const screenW = typeof window !== "undefined" ? window.innerWidth : 400;
+  const SIZE = focusMode ? Math.min(260, screenW - 80) : 180;
   const R = (SIZE - 6) / 2;
   const C = 2 * Math.PI * R;
   const offset = C * (1 - progress);
@@ -464,15 +465,15 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
   );
 
   if(focusMode) return (
-    <div style={{position:"fixed",inset:0,zIndex:200,background:"#030304",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fi .3s ease"}}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:9999,background:"#030304",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px",paddingBottom:"max(24px, env(safe-area-inset-bottom))",animation:"fi .3s ease"}}>
       {toast&&<div style={{position:"absolute",top:32,background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 20px",borderRadius:20,fontFamily:"var(--fm)",fontSize:14}}>{toast}</div>}
-      <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:44}}>{project||"Derin Odak"}</p>
+      <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:36}}>{project||"Derin Odak"}</p>
       {timerCore}
-      <div style={{marginTop:44,display:"flex",gap:14}}>
+      <div style={{marginTop:36,display:"flex",gap:14}}>
         <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:15,fontWeight:600,padding:"11px 32px",borderRadius:8,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304"}}>{running?"Duraklat":"Başlat"}</button>
         <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:15,padding:"11px 22px",borderRadius:8,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
       </div>
-      {sessions>0&&<p style={{marginTop:28,fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
+      {sessions>0&&<p style={{marginTop:24,fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
     </div>
   );
 
