@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 /* ─────────────────────────── GLOBAL STYLES ─────────────────────────── */
 const G = () => (
@@ -464,7 +465,7 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
     </div>
   );
 
-  if(focusMode) return (
+  const focusOverlay = (
     <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:9999,background:"#030304",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px",paddingBottom:"max(24px, env(safe-area-inset-bottom))",animation:"fi .3s ease"}}>
       {toast&&<div style={{position:"absolute",top:32,background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 20px",borderRadius:20,fontFamily:"var(--fm)",fontSize:14}}>{toast}</div>}
       <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:36}}>{project||"Derin Odak"}</p>
@@ -476,6 +477,8 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
       {sessions>0&&<p style={{marginTop:24,fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
     </div>
   );
+
+  if(focusMode) return createPortal(focusOverlay, document.body);
 
   return (
     <div style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px"}}>
