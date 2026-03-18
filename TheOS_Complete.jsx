@@ -128,11 +128,11 @@ const Tag = ({ children, color = "gold" }) => {
     rose:  ["var(--rose-s)",  "var(--rose)",  "rgba(184,92,110,.18)"],
   };
   const [bg, fg, border] = map[color] || map.gold;
-  return <span style={{ display:"inline-flex", alignItems:"center", fontSize:9, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", background:bg, color:fg, border:`1px solid ${border}`, padding:"3px 8px", borderRadius:3 }}>{children}</span>;
+  return <span style={{ display:"inline-flex", alignItems:"center", fontSize:11, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", background:bg, color:fg, border:`1px solid ${border}`, padding:"3px 8px", borderRadius:3 }}>{children}</span>;
 };
 
 const FieldLabel = ({ children, color = "var(--txd)" }) => (
-  <p style={{ fontSize:9, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", color, fontFamily:"var(--fm)", marginBottom:10 }}>{children}</p>
+  <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", color, fontFamily:"var(--fm)", marginBottom:10 }}>{children}</p>
 );
 
 const Card = ({ children, accent, style = {} }) => {
@@ -152,7 +152,7 @@ const Card = ({ children, accent, style = {} }) => {
 const Divider = ({ label }) => (
   <div style={{ display:"flex", alignItems:"center", gap:10, margin:"4px 0" }}>
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
-    {label && <span style={{ fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--txd)", fontFamily:"var(--fm)" }}>{label}</span>}
+    {label && <span style={{ fontSize:11, letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--txd)", fontFamily:"var(--fm)" }}>{label}</span>}
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
   </div>
 );
@@ -160,7 +160,7 @@ const Divider = ({ label }) => (
 const SectionHead = ({ tag, tagColor, title }) => (
   <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:18 }}>
     <Tag color={tagColor}>{tag}</Tag>
-    {title && <span style={{ fontSize:12, color:"var(--txm)", fontFamily:"var(--fm)" }}>{title}</span>}
+    {title && <span style={{ fontSize:14, color:"var(--txm)", fontFamily:"var(--fm)" }}>{title}</span>}
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
   </div>
 );
@@ -168,7 +168,7 @@ const SectionHead = ({ tag, tagColor, title }) => (
 const SaveDot = ({ saved }) => (
   <div style={{ display:"flex", alignItems:"center", gap:6, opacity:.55 }}>
     <div style={{ width:5, height:5, borderRadius:"50%", background:saved?"var(--green)":"var(--amber)", transition:"background .3s", animation:saved?"none":"pulse 1.2s infinite" }} />
-    <span style={{ fontSize:10, color:"var(--txd)", fontFamily:"var(--fm)" }}>{saved?"kaydedildi":"kaydediliyor"}</span>
+    <span style={{ fontSize:12, color:"var(--txd)", fontFamily:"var(--fm)" }}>{saved?"kaydedildi":"kaydediliyor"}</span>
   </div>
 );
 
@@ -225,11 +225,11 @@ function IdentityCore({ data, onChange }) {
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
         <Card accent="gold">
-          <p style={{fontFamily:"var(--fd)",fontSize:12,fontStyle:"italic",color:"var(--gold)",letterSpacing:"0.06em",marginBottom:12}}>"Ben … tipinde biriyim."</p>
+          <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--gold)",letterSpacing:"0.06em",marginBottom:12}}>"Ben … tipinde biriyim."</p>
           <textarea value={data.statement} onChange={e=>up("statement",e.target.value)}
             placeholder="Zorluklardan kaçmayan, her gün vizyonuma doğru istikrarlı adımlar atan biriyim."
             rows={2} style={{fontFamily:"var(--fd)",fontSize:21,fontWeight:300,fontStyle:"italic",lineHeight:1.5,width:"100%"}}/>
-          <p style={{fontSize:11,color:"var(--txd)",marginTop:10,lineHeight:1.6}}>Kimlik önce yazılır — davranışlar onu takip eder.</p>
+          <p style={{fontSize:13,color:"var(--txd)",marginTop:10,lineHeight:1.6}}>Kimlik önce yazılır — davranışlar onu takip eder.</p>
         </Card>
       </div>
 
@@ -244,13 +244,13 @@ function IdentityCore({ data, onChange }) {
             <FieldLabel color="var(--red)">Anti-Vizyon — Kaçtığın Hayat</FieldLabel>
             <textarea value={data.antiVision} onChange={e=>up("antiVision",e.target.value)}
               placeholder="Başkalarının hayallerini inşa eden, akşamları yorgunluktan ekrana bakan biri..."
-              rows={5} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
+              rows={5} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
           </Card>
           <Card accent="blue">
             <FieldLabel color="var(--blue)">İdeal Vizyon — Kazandığın Hayat</FieldLabel>
             <textarea value={data.idealVision} onChange={e=>up("idealVision",e.target.value)}
               placeholder="Kendi zamanını kontrol eden, özgürce üreten, zihinsel zirvede olan..."
-              rows={5} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
+              rows={5} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
           </Card>
         </div>
       </div>
@@ -266,7 +266,7 @@ function IdentityCore({ data, onChange }) {
             <Card key={f.key} accent={f.accent}>
               <FieldLabel color={f.color}>{f.label}</FieldLabel>
               <textarea value={data.ikigai[f.key]} onChange={e=>upI(f.key,e.target.value)}
-                rows={3} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
+                rows={3} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
             </Card>
           ))}
         </div>
@@ -307,13 +307,13 @@ function NorthStar({ data, onChange }) {
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
                     <Tag color={h.accent}>{h.label}</Tag>
                   </div>
-                  <p style={{fontSize:12,color:"var(--txd)",marginBottom:12,lineHeight:1.6}}>{h.sub}</p>
+                  <p style={{fontSize:14,color:"var(--txd)",marginBottom:12,lineHeight:1.6}}>{h.sub}</p>
                   <input type="text" value={data[h.key].goal} onChange={e=>up(h.key,"goal",e.target.value)}
                     placeholder="Hedef..."
                     style={{fontFamily:"var(--fd)",fontSize:19,fontWeight:400,lineHeight:1.4,color:"var(--tx)",width:"100%",padding:"4px 0",borderBottom:"1px solid var(--b)",marginBottom:12,display:"block"}}/>
                   <FieldLabel>Neden bu hedef?</FieldLabel>
                   <textarea value={data[h.key].why} onChange={e=>up(h.key,"why",e.target.value)}
-                    placeholder="Gerçek motivasyon..." rows={2} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
+                    placeholder="Gerçek motivasyon..." rows={2} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
                 </div>
               </div>
             </Card>
@@ -326,7 +326,7 @@ function NorthStar({ data, onChange }) {
         <Card style={{marginTop:16}}>
           <FieldLabel>Kısıtlamalar — Asla Feda Etmeyeceklerin</FieldLabel>
           <textarea value={data.constraints} onChange={e=>onChange({...data,constraints:e.target.value})}
-            placeholder="Uyku düzenim, ailem, fiziksel antrenmanım..." rows={3} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
+            placeholder="Uyku düzenim, ailem, fiziksel antrenmanım..." rows={3} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
         </Card>
       </div>
     </div>
@@ -356,12 +356,12 @@ function MorningStack({ items, done, onToggle }) {
               <div style={{width:17,height:17,borderRadius:4,flexShrink:0,border:`1.5px solid ${d?"var(--amber)":"var(--txd)"}`,background:d?"var(--amber)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}>
                 {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#080809" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-              <span style={{fontSize:13,flex:1,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none",textDecorationColor:"var(--txd)"}}>{item.text}</span>
+              <span style={{fontSize:15,flex:1,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none",textDecorationColor:"var(--txd)"}}>{item.text}</span>
             </div>
           );
         })}
       </div>
-      <p style={{fontFamily:"var(--fm)",fontSize:10,color:pct===100?"var(--amber)":"var(--txd)",marginTop:12,textAlign:"right"}}>{completed}/{items.length}</p>
+      <p style={{fontFamily:"var(--fm)",fontSize:12,color:pct===100?"var(--amber)":"var(--txd)",marginTop:12,textAlign:"right"}}>{completed}/{items.length}</p>
     </div>
   );
 }
@@ -385,15 +385,15 @@ function HabitTracker({ habits, done, onToggle }) {
                   strokeLinecap="round" strokeDasharray={94.25} strokeDashoffset={d?0:94.25}
                   style={{transition:"stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)",opacity:d?1:.2}}/>
               </svg>
-              <span style={{fontSize:14,flex:1,fontWeight:500,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none"}}>{h.text}</span>
+              <span style={{fontSize:16,flex:1,fontWeight:500,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none"}}>{h.text}</span>
               <div style={{width:7,height:7,borderRadius:"50%",background:d?h.color:"var(--bh)",transition:"background .3s"}}/>
             </div>
           );
         })}
       </div>
       <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid var(--b)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <span style={{fontSize:12,color:"var(--txd)"}}>Bugünkü skor</span>
-        <span style={{fontFamily:"var(--fm)",fontSize:20,color:completed===habits.length?"var(--gold)":"var(--txm)"}}>{completed}<span style={{fontSize:12,color:"var(--txd)"}}>/{habits.length}</span></span>
+        <span style={{fontSize:14,color:"var(--txd)"}}>Bugünkü skor</span>
+        <span style={{fontFamily:"var(--fm)",fontSize:20,color:completed===habits.length?"var(--gold)":"var(--txm)"}}>{completed}<span style={{fontSize:14,color:"var(--txd)"}}>/{habits.length}</span></span>
       </div>
     </div>
   );
@@ -458,44 +458,44 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
       </svg>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
         <span style={{fontFamily:"var(--fm)",fontSize:focusMode?52:32,fontWeight:300,letterSpacing:"0.04em",color:running?"var(--tx)":"var(--txm)"}}>{mins}:{sec2}</span>
-        {!focusMode&&<span style={{fontSize:9,color:"var(--txd)",letterSpacing:"0.12em",textTransform:"uppercase",marginTop:2}}>{running?"odakta":"hazır"}</span>}
+        {!focusMode&&<span style={{fontSize:11,color:"var(--txd)",letterSpacing:"0.12em",textTransform:"uppercase",marginTop:2}}>{running?"odakta":"hazır"}</span>}
       </div>
     </div>
   );
 
   if(focusMode) return (
     <div style={{position:"fixed",inset:0,zIndex:200,background:"#030304",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fi .3s ease"}}>
-      {toast&&<div style={{position:"absolute",top:32,background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 20px",borderRadius:20,fontFamily:"var(--fm)",fontSize:12}}>{toast}</div>}
-      <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:44}}>{project||"Derin Odak"}</p>
+      {toast&&<div style={{position:"absolute",top:32,background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 20px",borderRadius:20,fontFamily:"var(--fm)",fontSize:14}}>{toast}</div>}
+      <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:44}}>{project||"Derin Odak"}</p>
       {timerCore}
       <div style={{marginTop:44,display:"flex",gap:14}}>
-        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:13,fontWeight:600,padding:"11px 32px",borderRadius:8,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304"}}>{running?"Duraklat":"Başlat"}</button>
-        <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:13,padding:"11px 22px",borderRadius:8,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
+        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:15,fontWeight:600,padding:"11px 32px",borderRadius:8,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304"}}>{running?"Duraklat":"Başlat"}</button>
+        <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:15,padding:"11px 22px",borderRadius:8,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
       </div>
-      {sessions>0&&<p style={{marginTop:28,fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
+      {sessions>0&&<p style={{marginTop:28,fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
     </div>
   );
 
   return (
     <div style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px"}}>
-      {toast&&<div style={{marginBottom:12,background:"var(--gold-s)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"7px 14px",borderRadius:8,fontFamily:"var(--fm)",fontSize:11,textAlign:"center"}}>{toast}</div>}
+      {toast&&<div style={{marginBottom:12,background:"var(--gold-s)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"7px 14px",borderRadius:8,fontFamily:"var(--fm)",fontSize:13,textAlign:"center"}}>{toast}</div>}
       <SectionHead tag="Derin Odak" tagColor="violet"/>
       <div style={{marginBottom:16,padding:"9px 12px",background:"var(--s2)",borderRadius:10,border:"1px solid var(--b)"}}>
-        <p style={{fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:5}}>Aktif Görev</p>
-        <input value={project} onChange={e=>setProject(e.target.value)} placeholder="Ne üzerinde çalışıyorsun?" style={{fontSize:13,width:"100%"}}/>
+        <p style={{fontSize:11,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:5}}>Aktif Görev</p>
+        <input value={project} onChange={e=>setProject(e.target.value)} placeholder="Ne üzerinde çalışıyorsun?" style={{fontSize:15,width:"100%"}}/>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:20}}>
         {PRESETS.map(p=>(
-          <button key={p.label} onClick={()=>pick(p)} style={{flex:1,padding:"7px 0",borderRadius:8,border:`1px solid ${preset.label===p.label?"var(--gold)":"var(--b)"}`,background:preset.label===p.label?"var(--gold-s)":"transparent",color:preset.label===p.label?"var(--gold)":"var(--txd)",fontSize:12,fontFamily:"var(--fm)",cursor:"pointer",transition:"all .2s"}}>{p.label}</button>
+          <button key={p.label} onClick={()=>pick(p)} style={{flex:1,padding:"7px 0",borderRadius:8,border:`1px solid ${preset.label===p.label?"var(--gold)":"var(--b)"}`,background:preset.label===p.label?"var(--gold-s)":"transparent",color:preset.label===p.label?"var(--gold)":"var(--txd)",fontSize:14,fontFamily:"var(--fm)",cursor:"pointer",transition:"all .2s"}}>{p.label}</button>
         ))}
       </div>
       <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>{timerCore}</div>
       <div style={{display:"flex",gap:10}}>
-        <button onClick={running?pause:start} style={{flex:2,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:running?"var(--s3)":"var(--gold)",color:running?"var(--tx)":"#030304",fontSize:13,fontWeight:600,fontFamily:"var(--fb)",transition:"all .2s"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
-        <button onClick={reset} style={{flex:1,padding:"11px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:13,fontFamily:"var(--fb)"}}>↺</button>
-        <button onClick={()=>{if(!running)start();setFocusMode(true);}} title="Tam ekran" style={{padding:"11px 13px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:15}}>⛶</button>
+        <button onClick={running?pause:start} style={{flex:2,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:running?"var(--s3)":"var(--gold)",color:running?"var(--tx)":"#030304",fontSize:15,fontWeight:600,fontFamily:"var(--fb)",transition:"all .2s"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
+        <button onClick={reset} style={{flex:1,padding:"11px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:15,fontFamily:"var(--fb)"}}>↺</button>
+        <button onClick={()=>{if(!running)start();setFocusMode(true);}} title="Tam ekran" style={{padding:"11px 13px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:17}}>⛶</button>
       </div>
-      {sessions>0&&<p style={{marginTop:12,textAlign:"center",fontFamily:"var(--fm)",fontSize:11,color:"var(--gold)"}}>◆ {sessions} seans · {sessions*Math.round(preset.sec/60)} dk odak</p>}
+      {sessions>0&&<p style={{marginTop:12,textAlign:"center",fontFamily:"var(--fm)",fontSize:13,color:"var(--gold)"}}>◆ {sessions} seans · {sessions*Math.round(preset.sec/60)} dk odak</p>}
     </div>
   );
 }
@@ -509,10 +509,10 @@ function DayScore({ morning, mDone, habits, hDone, streak, sessions }) {
   return (
     <div style={{background:"var(--s1)",border:`1px solid ${overall>=80?"var(--gold-m)":"var(--b)"}`,borderRadius:16,padding:"20px 24px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",transition:"border-color .3s"}}>
       <div style={{flex:1,minWidth:100}}>
-        <p style={{fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:4}}>Günün Skoru</p>
+        <p style={{fontSize:11,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:4}}>Günün Skoru</p>
         <div style={{display:"flex",alignItems:"baseline",gap:4}}>
           <span style={{fontFamily:"var(--fd)",fontSize:38,fontWeight:600,color:scoreColor}}>{overall}</span>
-          <span style={{fontSize:13,color:"var(--txd)"}}>/ 100</span>
+          <span style={{fontSize:15,color:"var(--txd)"}}>/ 100</span>
         </div>
       </div>
       <div style={{width:1,height:36,background:"var(--b)"}}/>
@@ -524,7 +524,7 @@ function DayScore({ morning, mDone, habits, hDone, streak, sessions }) {
           {label:"🔥 Seri",  val:`${streak} gün`,                                               c:"var(--gold)"},
         ].map(s=>(
           <div key={s.label}>
-            <p style={{fontSize:9,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:3}}>{s.label}</p>
+            <p style={{fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:3}}>{s.label}</p>
             <p style={{fontFamily:"var(--fm)",fontSize:17,color:s.c}}>{s.val}</p>
           </div>
         ))}
@@ -539,10 +539,10 @@ function EndDayModal({ onClose, onConfirm }) {
     <div style={{position:"fixed",inset:0,zIndex:150,background:"rgba(4,4,5,.88)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{background:"var(--s1)",border:"1px solid var(--bh)",borderRadius:20,padding:"34px 38px",maxWidth:360,width:"90%",animation:"fu .25s ease"}}>
         <p style={{fontFamily:"var(--fd)",fontSize:26,fontStyle:"italic",color:"var(--tx)",marginBottom:12}}>Günü kapat?</p>
-        <p style={{fontSize:13,color:"var(--txd)",lineHeight:1.7,marginBottom:26}}>Sabah ritüeli ve alışkanlıklar sıfırlanacak. Seri sayacın güncellenecek.</p>
+        <p style={{fontSize:15,color:"var(--txd)",lineHeight:1.7,marginBottom:26}}>Sabah ritüeli ve alışkanlıklar sıfırlanacak. Seri sayacın güncellenecek.</p>
         <div style={{display:"flex",gap:12}}>
-          <button onClick={onConfirm} style={{flex:1,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304",fontSize:13,fontWeight:600,fontFamily:"var(--fb)"}}>Kapat & Senkronize Et</button>
-          <button onClick={onClose} style={{padding:"11px 18px",borderRadius:10,cursor:"pointer",border:"1px solid var(--b)",background:"transparent",color:"var(--txd)",fontSize:13,fontFamily:"var(--fb)"}}>Geri</button>
+          <button onClick={onConfirm} style={{flex:1,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304",fontSize:15,fontWeight:600,fontFamily:"var(--fb)"}}>Kapat & Senkronize Et</button>
+          <button onClick={onClose} style={{padding:"11px 18px",borderRadius:10,cursor:"pointer",border:"1px solid var(--b)",background:"transparent",color:"var(--txd)",fontSize:15,fontFamily:"var(--fb)"}}>Geri</button>
         </div>
       </div>
     </div>
@@ -576,12 +576,12 @@ function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDon
             <DeepWorkTimer onSession={()=>setSessions(s=>s+1)} xp={xp} setXp={setXp}/>
           </div>
           <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"20px 22px"}}>
-            <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:10}}>Bugünün Tek Odağı</p>
+            <p style={{fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:10}}>Bugünün Tek Odağı</p>
             <textarea value={focusText} onChange={e=>setFocusText(e.target.value)}
               placeholder="Bugün tek şeyi yapabilseydin ne olurdu?" rows={3}
-              style={{width:"100%",fontSize:14,lineHeight:1.75,fontFamily:"var(--fd)",fontStyle:"italic"}}/>
+              style={{width:"100%",fontSize:16,lineHeight:1.75,fontFamily:"var(--fd)",fontStyle:"italic"}}/>
           </div>
-          <button onClick={()=>setShowEnd(true)} style={{width:"100%",padding:"12px",borderRadius:12,border:"1px solid var(--bh)",cursor:"pointer",background:"var(--s2)",color:"var(--txm)",fontSize:13,fontFamily:"var(--fb)",fontWeight:500,transition:"all .2s"}}>
+          <button onClick={()=>setShowEnd(true)} style={{width:"100%",padding:"12px",borderRadius:12,border:"1px solid var(--bh)",cursor:"pointer",background:"var(--s2)",color:"var(--txm)",fontSize:15,fontFamily:"var(--fb)",fontWeight:500,transition:"all .2s"}}>
             Günü Kapat & Senkronize Et ↓
           </button>
         </div>
@@ -616,36 +616,36 @@ function AutopilotBreaker() {
           <h2 style={{fontFamily:"var(--fd)",fontSize:28,fontWeight:400,fontStyle:"italic",color:"var(--tx)"}}>Otopilotu Kes</h2>
           <span className="ink" style={{flex:1,marginBottom:5}}/>
         </div>
-        <p style={{fontSize:13,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Hayat kelimelerde değil, olaylarda yaşanır. Şu anki gerçekliğinle yüzleş.</p>
+        <p style={{fontSize:15,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Hayat kelimelerde değil, olaylarda yaşanır. Şu anki gerçekliğinle yüzleş.</p>
       </div>
       <div className="fu1" style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:24}}>
         {AUTOPILOT_QS.map((qs,i)=>(
-          <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 11px",borderRadius:16,border:`1px solid ${i===idx?qs.color:"var(--b)"}`,background:i===idx?qs.bg:"transparent",color:i===idx?qs.color:"var(--txd)",cursor:"pointer",transition:"all .2s"}}>{i+1}</button>
+          <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:13,padding:"4px 11px",borderRadius:16,border:`1px solid ${i===idx?qs.color:"var(--b)"}`,background:i===idx?qs.bg:"transparent",color:i===idx?qs.color:"var(--txd)",cursor:"pointer",transition:"all .2s"}}>{i+1}</button>
         ))}
-        <button onClick={()=>goTo(Math.floor(Math.random()*AUTOPILOT_QS.length))} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 11px",borderRadius:16,border:"1px dashed var(--bh)",background:"transparent",color:"var(--txd)",cursor:"pointer",marginLeft:4}}>⟳</button>
+        <button onClick={()=>goTo(Math.floor(Math.random()*AUTOPILOT_QS.length))} style={{fontFamily:"var(--fm)",fontSize:13,padding:"4px 11px",borderRadius:16,border:"1px dashed var(--bh)",background:"transparent",color:"var(--txd)",cursor:"pointer",marginLeft:4}}>⟳</button>
       </div>
       <div className="fu2" style={{background:"var(--s1)",border:`1px solid ${q.color}20`,borderRadius:18,overflow:"hidden",marginBottom:16}}>
         <div style={{height:2,background:q.color,opacity:.55}}/>
         <div style={{padding:"28px 28px 24px"}}>
           <div style={{animation:anim?"swap .5s ease":"none"}}>
             <p style={{fontFamily:"var(--fd)",fontSize:20,fontStyle:"italic",color:"var(--tx)",lineHeight:1.55,marginBottom:8}}>{q.q}</p>
-            <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:24}}>{q.hint}</p>
+            <p style={{fontSize:14,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:24}}>{q.hint}</p>
           </div>
           <div style={{borderTop:`1px solid ${q.color}15`,paddingTop:18}}>
             <textarea ref={ref} value={answer} onChange={e=>setAnswers(p=>({...p,[q.id]:e.target.value}))}
               placeholder="Dürüstçe yaz. Sadece kendin için..." rows={6}
-              style={{width:"100%",fontSize:15,lineHeight:1.8,letterSpacing:"0.01em"}}/>
+              style={{width:"100%",fontSize:17,lineHeight:1.8,letterSpacing:"0.01em"}}/>
           </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:14}}>
-            <span style={{fontFamily:"var(--fm)",fontSize:10,color:wc(answer)>10?q.color:"var(--txd)",transition:"color .3s"}}>{wc(answer)} kelime</span>
-            <button onClick={handleSave} disabled={!answer.trim()} style={{fontFamily:"var(--fm)",fontSize:11,padding:"7px 18px",borderRadius:8,border:`1px solid ${answer.trim()?q.color:"var(--b)"}`,background:saved?q.bg:"transparent",color:saved?q.color:answer.trim()?q.color:"var(--txd)",cursor:answer.trim()?"pointer":"default",transition:"all .25s"}}>{saved?"✓ kaydedildi":"kaydet"}</button>
+            <span style={{fontFamily:"var(--fm)",fontSize:12,color:wc(answer)>10?q.color:"var(--txd)",transition:"color .3s"}}>{wc(answer)} kelime</span>
+            <button onClick={handleSave} disabled={!answer.trim()} style={{fontFamily:"var(--fm)",fontSize:13,padding:"7px 18px",borderRadius:8,border:`1px solid ${answer.trim()?q.color:"var(--b)"}`,background:saved?q.bg:"transparent",color:saved?q.color:answer.trim()?q.color:"var(--txd)",cursor:answer.trim()?"pointer":"default",transition:"all .25s"}}>{saved?"✓ kaydedildi":"kaydet"}</button>
           </div>
         </div>
       </div>
       <div className="fu3" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <button onClick={()=>goTo(Math.max(0,idx-1))} disabled={idx===0} style={{fontFamily:"var(--fm)",fontSize:12,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===0?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===0?.3:1,transition:"opacity .2s"}}>← önceki</button>
-        <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>{idx+1} / {AUTOPILOT_QS.length}</span>
-        <button onClick={()=>goTo(Math.min(AUTOPILOT_QS.length-1,idx+1))} disabled={idx===AUTOPILOT_QS.length-1} style={{fontFamily:"var(--fm)",fontSize:12,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===AUTOPILOT_QS.length-1?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===AUTOPILOT_QS.length-1?.3:1,transition:"opacity .2s"}}>sonraki →</button>
+        <button onClick={()=>goTo(Math.max(0,idx-1))} disabled={idx===0} style={{fontFamily:"var(--fm)",fontSize:14,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===0?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===0?.3:1,transition:"opacity .2s"}}>← önceki</button>
+        <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{idx+1} / {AUTOPILOT_QS.length}</span>
+        <button onClick={()=>goTo(Math.min(AUTOPILOT_QS.length-1,idx+1))} disabled={idx===AUTOPILOT_QS.length-1} style={{fontFamily:"var(--fm)",fontSize:14,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===AUTOPILOT_QS.length-1?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===AUTOPILOT_QS.length-1?.3:1,transition:"opacity .2s"}}>sonraki →</button>
       </div>
     </div>
   );
@@ -674,27 +674,27 @@ function BrainDump() {
           <h2 style={{fontFamily:"var(--fd)",fontSize:28,fontWeight:400,fontStyle:"italic",color:"var(--tx)"}}>Brain Dump</h2>
           <span className="ink" style={{flex:1,marginBottom:5}}/>
         </div>
-        <p style={{fontSize:13,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Zihnindeki her şeyi dışarı at. Filtre yok, yargı yok. Sadece ak.</p>
+        <p style={{fontSize:15,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Zihnindeki her şeyi dışarı at. Filtre yok, yargı yok. Sadece ak.</p>
       </div>
       <div className="fu1" style={{display:"flex",gap:7,marginBottom:20}}>
         {[todayKey(),...pastKeys.slice(0,5)].map(k=>(
-          <button key={k} onClick={()=>setDateView(k)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"5px 12px",borderRadius:16,border:`1px solid ${dateView===k?"var(--amber)":"var(--b)"}`,background:dateView===k?"var(--amber-s)":"transparent",color:dateView===k?"var(--amber)":"var(--txd)",cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap"}}>
+          <button key={k} onClick={()=>setDateView(k)} style={{fontFamily:"var(--fm)",fontSize:13,padding:"5px 12px",borderRadius:16,border:`1px solid ${dateView===k?"var(--amber)":"var(--b)"}`,background:dateView===k?"var(--amber-s)":"transparent",color:dateView===k?"var(--amber)":"var(--txd)",cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap"}}>
             {k===todayKey()?"bugün":new Date(k).toLocaleDateString("tr-TR",{day:"numeric",month:"short"})}
           </button>
         ))}
       </div>
       <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:18,overflow:"hidden"}}>
         <div style={{padding:"12px 22px",borderBottom:"1px solid var(--b)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>{fmtDate(dateView)}</span>
+          <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{fmtDate(dateView)}</span>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontFamily:"var(--fm)",fontSize:11,color:wc(text)>50?"var(--amber)":"var(--txd)",transition:"color .3s"}}>{wc(text)} kelime</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:13,color:wc(text)>50?"var(--amber)":"var(--txd)",transition:"color .3s"}}>{wc(text)} kelime</span>
             <div style={{width:5,height:5,borderRadius:"50%",background:saving?"var(--amber)":"var(--green)",animation:saving?"pulse 1s infinite":"none",transition:"background .3s"}}/>
           </div>
         </div>
         <div style={{padding:"24px 28px",backgroundImage:isToday?"repeating-linear-gradient(transparent,transparent 31px,rgba(255,255,255,.022) 31px,rgba(255,255,255,.022) 32px)":"none",backgroundSize:"100% 32px",backgroundPositionY:"24px"}}>
           <textarea value={text} onChange={e=>handleChange(e.target.value)} readOnly={!isToday}
             placeholder={isToday?"Aklındaki her şeyi buraya dök.\n\nNe düşünüyorsun? Ne hissediyorsun? Neyi çözmek istiyorsun?\nFiltre yok. Sadece yaz.":"(geçmiş kayıt — salt okunur)"}
-            rows={16} style={{width:"100%",fontSize:15,lineHeight:"32px",letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
+            rows={16} style={{width:"100%",fontSize:17,lineHeight:"32px",letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
         </div>
       </div>
     </div>
@@ -733,16 +733,16 @@ function WeeklyReview() {
           <span className="ink" style={{flex:1,marginBottom:5}}/>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <p style={{fontSize:13,color:"var(--txd)",fontStyle:"italic"}}>{getWeekRange()}</p>
+          <p style={{fontSize:15,color:"var(--txd)",fontStyle:"italic"}}>{getWeekRange()}</p>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             {WEEKLY_PROMPTS.map(p=><div key={p.key} style={{width:7,height:7,borderRadius:"50%",background:(review[p.key]||"").trim().length>20?p.color:"var(--bh)",transition:"background .3s"}}/>)}
-            <span style={{fontFamily:"var(--fm)",fontSize:10,color:saving?"var(--amber)":saved?"var(--green)":"var(--txd)",marginLeft:4}}>{saving?"kayıt...":saved?"✓":`${done}/4`}</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:12,color:saving?"var(--amber)":saved?"var(--green)":"var(--txd)",marginLeft:4}}>{saving?"kayıt...":saved?"✓":`${done}/4`}</span>
           </div>
         </div>
       </div>
       <div className="fu1" style={{marginBottom:24,padding:"16px 20px",borderLeft:"2px solid var(--amber)",background:"var(--amber-s)",borderRadius:"0 10px 10px 0"}}>
-        <p style={{fontFamily:"var(--fd)",fontSize:15,fontStyle:"italic",color:"var(--txm)",lineHeight:1.8}}>"What gets reviewed gets improved. What gets ignored stays broken."</p>
-        <p style={{fontSize:11,color:"var(--txd)",marginTop:6,fontFamily:"var(--fm)"}}>— Dan Koe</p>
+        <p style={{fontFamily:"var(--fd)",fontSize:17,fontStyle:"italic",color:"var(--txm)",lineHeight:1.8}}>"What gets reviewed gets improved. What gets ignored stays broken."</p>
+        <p style={{fontSize:13,color:"var(--txd)",marginTop:6,fontFamily:"var(--fm)"}}>— Dan Koe</p>
       </div>
       <div style={{display:"flex",flexDirection:"column",gap:16}}>
         {WEEKLY_PROMPTS.map((p,i)=>{
@@ -754,10 +754,10 @@ function WeeklyReview() {
                 <div style={{width:3,flexShrink:0,background:filled?p.color:"var(--b)",transition:"background .3s"}}/>
                 <div style={{flex:1,padding:"20px 22px"}}>
                   <FieldLabel color={filled?p.color:"var(--txd)"}>{p.label}</FieldLabel>
-                  <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:12}}>{p.hint}</p>
+                  <p style={{fontSize:14,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:12}}>{p.hint}</p>
                   <textarea value={val} onChange={e=>handleChange(p.key,e.target.value)}
-                    placeholder="Yaz..." rows={p.key==="nextfocus"?2:3} style={{width:"100%",fontSize:14,lineHeight:1.75}}/>
-                  <p style={{fontSize:10,color:wc(val)>10?p.color:"var(--txd)",fontFamily:"var(--fm)",marginTop:6,textAlign:"right",transition:"color .3s"}}>{wc(val)} kelime</p>
+                    placeholder="Yaz..." rows={p.key==="nextfocus"?2:3} style={{width:"100%",fontSize:16,lineHeight:1.75}}/>
+                  <p style={{fontSize:12,color:wc(val)>10?p.color:"var(--txd)",fontFamily:"var(--fm)",marginTop:6,textAlign:"right",transition:"color .3s"}}>{wc(val)} kelime</p>
                 </div>
               </div>
             </div>
@@ -766,7 +766,7 @@ function WeeklyReview() {
       </div>
       {done===4&&<div className="fi" style={{marginTop:24,padding:"18px 22px",background:"var(--green-s)",border:"1px solid rgba(58,148,105,.2)",borderRadius:12,textAlign:"center"}}>
         <p style={{fontFamily:"var(--fd)",fontSize:17,fontStyle:"italic",color:"var(--green)"}}>Bu haftanın review'u tamamlandı.</p>
-        <p style={{fontSize:12,color:"var(--txd)",marginTop:4}}>Refleksiyon yapan %1'in içindesin. Devam et.</p>
+        <p style={{fontSize:14,color:"var(--txd)",marginTop:4}}>Refleksiyon yapan %1'in içindesin. Devam et.</p>
       </div>}
     </div>
   );
@@ -784,7 +784,7 @@ function MindJournal() {
     <div>
       <div style={{display:"flex",gap:4,marginBottom:28,borderBottom:"1px solid var(--b)",paddingBottom:0}}>
         {JOURNAL_TABS.map(t=>(
-          <button key={t.key} onClick={()=>setSub(t.key)} style={{fontFamily:"var(--fm)",fontSize:12,padding:"8px 18px",border:"none",cursor:"pointer",background:"transparent",color:sub===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${sub===t.key?t.color:"transparent"}`,transition:"all .2s",marginBottom:-1,letterSpacing:"0.04em"}}>{t.label}</button>
+          <button key={t.key} onClick={()=>setSub(t.key)} style={{fontFamily:"var(--fm)",fontSize:14,padding:"8px 18px",border:"none",cursor:"pointer",background:"transparent",color:sub===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${sub===t.key?t.color:"transparent"}`,transition:"all .2s",marginBottom:-1,letterSpacing:"0.04em"}}>{t.label}</button>
         ))}
       </div>
       {sub==="autopilot"&&<AutopilotBreaker/>}
@@ -823,11 +823,11 @@ function StreakCalendar({ dayData }) {
   return (
     <div>
       <div style={{display:"flex",marginBottom:6,paddingLeft:26}}>
-        {weeks.map((_,wi)=>{const ml=mLabels.find(m=>m.wi===wi);return(<div key={wi} style={{flex:1,fontSize:9,fontFamily:"var(--fm)",color:ml?"var(--txd)":"transparent",letterSpacing:"0.06em"}}>{ml?.lbl||"·"}</div>);})}
+        {weeks.map((_,wi)=>{const ml=mLabels.find(m=>m.wi===wi);return(<div key={wi} style={{flex:1,fontSize:11,fontFamily:"var(--fm)",color:ml?"var(--txd)":"transparent",letterSpacing:"0.06em"}}>{ml?.lbl||"·"}</div>);})}
       </div>
       <div style={{display:"flex",gap:2}}>
         <div style={{display:"flex",flexDirection:"column",gap:2,marginRight:4}}>
-          {TR.map(d=><div key={d} style={{height:12,fontSize:8,fontFamily:"var(--fm)",color:"var(--txd)",display:"flex",alignItems:"center"}}>{d}</div>)}
+          {TR.map(d=><div key={d} style={{height:12,fontSize:10,fontFamily:"var(--fm)",color:"var(--txd)",display:"flex",alignItems:"center"}}>{d}</div>)}
         </div>
         {weeks.map((week,wi)=>(
           <div key={wi} style={{display:"flex",flexDirection:"column",gap:2,flex:1}}>
@@ -842,14 +842,14 @@ function StreakCalendar({ dayData }) {
       {tip&&(
         <div style={{marginTop:10,padding:"7px 14px",background:"var(--s2)",border:"1px solid var(--bh)",borderRadius:8,display:"inline-flex",alignItems:"center",gap:10}}>
           <div style={{width:9,height:9,borderRadius:2,background:cellC(tip.s)}}/>
-          <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txm)"}}>{fmtDate(tip.day)}</span>
-          <span style={{fontFamily:"var(--fm)",fontSize:11,color:tip.s?"var(--gold)":"var(--txd)"}}>{tip.s?`${tip.s}/4 tamamlandı`:"Kayıt yok"}</span>
+          <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txm)"}}>{fmtDate(tip.day)}</span>
+          <span style={{fontFamily:"var(--fm)",fontSize:13,color:tip.s?"var(--gold)":"var(--txd)"}}>{tip.s?`${tip.s}/4 tamamlandı`:"Kayıt yok"}</span>
         </div>
       )}
       <div style={{marginTop:10,display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}>
-        <span style={{fontSize:9,fontFamily:"var(--fm)",color:"var(--txd)"}}>az</span>
+        <span style={{fontSize:11,fontFamily:"var(--fm)",color:"var(--txd)"}}>az</span>
         {[0,1,2,3,4].map(s=><div key={s} style={{width:11,height:11,borderRadius:2,background:cellC(s)}}/>)}
-        <span style={{fontSize:9,fontFamily:"var(--fm)",color:"var(--txd)"}}>çok</span>
+        <span style={{fontSize:11,fontFamily:"var(--fm)",color:"var(--txd)"}}>çok</span>
       </div>
     </div>
   );
@@ -895,29 +895,29 @@ function Progress({ xp, streak }) {
             </svg>
             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
               <span style={{fontFamily:"var(--fd)",fontSize:30,fontWeight:600,color:"var(--gold)"}}>{lvl}</span>
-              <span style={{fontFamily:"var(--fm)",fontSize:8,color:"var(--txd)",letterSpacing:"0.1em"}}>LEVEL</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",letterSpacing:"0.1em"}}>LEVEL</span>
             </div>
           </div>
-          <p style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--gold)",letterSpacing:"0.1em"}}>{lvlTitle(lvl).toUpperCase()}</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:12,color:"var(--gold)",letterSpacing:"0.1em"}}>{lvlTitle(lvl).toUpperCase()}</p>
         </div>
         <div style={{width:1,height:90,background:"var(--b)"}}/>
         {/* XP bar */}
         <div style={{flex:1,minWidth:180}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-            <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>Seviye {lvl} → {lvl+1}</span>
-            <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--gold)"}}>{xpInLvl} / 500 XP</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:12,color:"var(--txd)"}}>Seviye {lvl} → {lvl+1}</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:12,color:"var(--gold)"}}>{xpInLvl} / 500 XP</span>
           </div>
           <div style={{height:5,background:"var(--s3)",borderRadius:3,overflow:"hidden",marginBottom:18}}>
             <div className="bgrow" style={{height:"100%",background:"var(--gold)",borderRadius:3,width:`${lvlPct}%`,boxShadow:"0 0 8px rgba(201,168,76,.3)",animationDelay:".3s"}}/>
           </div>
-          <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--txm)",lineHeight:1.7}}>"Discipline is choosing between what you want now and what you want most."</p>
+          <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"var(--txm)",lineHeight:1.7}}>"Discipline is choosing between what you want now and what you want most."</p>
         </div>
         <div style={{width:1,height:90,background:"var(--b)"}}/>
         {/* Stats */}
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {[{label:"Aktif Gün",val:totalDays,c:"var(--gold)"},{label:"Kusursuz",val:perfectDays,c:"var(--green)"},{label:"🔥 Seri",val:`${streak} gün`,c:"var(--violet)"}].map(s=>(
             <div key={s.label}>
-              <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:2}}>{s.label}</p>
+              <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:2}}>{s.label}</p>
               <p style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:600,color:s.c}}>{s.val}</p>
             </div>
           ))}
@@ -926,7 +926,7 @@ function Progress({ xp, streak }) {
 
       {/* Calendar */}
       <div className="fu1" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"24px 28px",marginBottom:18}}>
-        <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>84 Günlük Aktivite</p>
+        <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>84 Günlük Aktivite</p>
         <StreakCalendar dayData={dayData}/>
       </div>
 
@@ -934,13 +934,13 @@ function Progress({ xp, streak }) {
       <div className="r-grid2" style={{gap:18}}>
         {/* Habits breakdown */}
         <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px 24px"}}>
-          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Alışkanlık Oranı (84 gün)</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Alışkanlık Oranı (84 gün)</p>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             {HABITS_STAT.map((h,i)=>(
               <div key={h.label} style={{animationDelay:`${i*.08}s`}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                  <span style={{fontSize:13,color:"var(--txm)"}}>{h.label}</span>
-                  <span style={{fontFamily:"var(--fm)",fontSize:11,color:h.color}}>{h.pct}%</span>
+                  <span style={{fontSize:15,color:"var(--txm)"}}>{h.label}</span>
+                  <span style={{fontFamily:"var(--fm)",fontSize:13,color:h.color}}>{h.pct}%</span>
                 </div>
                 <div style={{height:3,background:"var(--s3)",borderRadius:2,overflow:"hidden"}}>
                   <div className="bgrow" style={{height:"100%",background:h.color,borderRadius:2,width:`${h.pct}%`,animationDelay:`${.3+i*.08}s`}}/>
@@ -951,7 +951,7 @@ function Progress({ xp, streak }) {
         </div>
         {/* Milestones */}
         <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px 24px"}}>
-          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Kilometre Taşları</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Kilometre Taşları</p>
           <div style={{position:"relative",marginBottom:20}}>
             <div style={{height:2,background:"var(--s3)",borderRadius:1}}/>
             <div className="bgrow" style={{position:"absolute",top:0,left:0,height:2,background:"var(--gold)",borderRadius:1,width:`${Math.min(xp/maxM*100,100)}%`,animationDelay:".4s"}}/>
@@ -962,10 +962,10 @@ function Progress({ xp, streak }) {
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {MILESTONES.map(m=>(
               <div key={m.xp} style={{display:"flex",alignItems:"center",gap:10,opacity:m.done?1:.35,transition:"opacity .2s"}}>
-                <span style={{fontFamily:"var(--fm)",fontSize:13,color:m.done?"var(--gold)":"var(--txd)",width:14}}>{m.icon}</span>
-                <span style={{fontSize:13,flex:1,color:m.done?"var(--tx)":"var(--txm)"}}>{m.label}</span>
-                <span style={{fontFamily:"var(--fm)",fontSize:10,color:m.done?"var(--gold)":"var(--txd)"}}>{m.xp} XP</span>
-                {m.done&&<span style={{fontSize:10,color:"var(--green)"}}>✓</span>}
+                <span style={{fontFamily:"var(--fm)",fontSize:15,color:m.done?"var(--gold)":"var(--txd)",width:14}}>{m.icon}</span>
+                <span style={{fontSize:15,flex:1,color:m.done?"var(--tx)":"var(--txm)"}}>{m.label}</span>
+                <span style={{fontFamily:"var(--fm)",fontSize:12,color:m.done?"var(--gold)":"var(--txd)"}}>{m.xp} XP</span>
+                {m.done&&<span style={{fontSize:12,color:"var(--green)"}}>✓</span>}
               </div>
             ))}
           </div>
@@ -980,8 +980,8 @@ function Progress({ xp, streak }) {
 // ════════════════════════════════════════════════════════
 const IdentityBanner = ({ stmt }) => !stmt ? null : (
   <div style={{borderBottom:"1px solid var(--b)",padding:"8px 28px",background:"rgba(201,168,76,.02)",display:"flex",alignItems:"center",gap:10}}>
-    <span style={{fontSize:9,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase",flexShrink:0,fontFamily:"var(--fm)"}}>Ben</span>
-    <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"rgba(221,216,207,.55)",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{stmt}</p>
+    <span style={{fontSize:11,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase",flexShrink:0,fontFamily:"var(--fm)"}}>Ben</span>
+    <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"rgba(221,216,207,.55)",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{stmt}</p>
   </div>
 );
 
@@ -1075,12 +1075,12 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{fontFamily:"var(--fd)",fontSize:20,fontWeight:600,color:"var(--tx)"}}>The OS</span>
               <div style={{width:1,height:13,background:"var(--bh)"}}/>
-              <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.14em"}}>{activeTab?.label.toUpperCase()}</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)",letterSpacing:"0.14em"}}>{activeTab?.label.toUpperCase()}</span>
             </div>
             {/* Nav — desktop */}
             <nav className="r-nav-desktop">
               {TABS.map(t=>(
-                <button key={t.key} onClick={()=>setTab(t.key)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s",letterSpacing:"0.04em",display:"flex",alignItems:"center",gap:5,marginBottom:"-1px"}}>
+                <button key={t.key} onClick={()=>setTab(t.key)} style={{fontFamily:"var(--fm)",fontSize:13,padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s",letterSpacing:"0.04em",display:"flex",alignItems:"center",gap:5,marginBottom:"-1px"}}>
                   <span style={{opacity:.7}}>{t.icon}</span> {t.label}
                 </button>
               ))}
@@ -1089,9 +1089,9 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",gap:16}}>
               <SaveDot saved={saved}/>
               <div className="r-xp" style={{alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 14px",borderRadius:16}}>
-                <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:15,fontWeight:600}}>{xp.toLocaleString()} XP</span>
+                <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:17,fontWeight:600}}>{xp.toLocaleString()} XP</span>
                 <div style={{width:1,height:11,background:"var(--bh)"}}/>
-                <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>🔥 {streak}</span>
+                <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>🔥 {streak}</span>
               </div>
             </div>
           </div>
@@ -1113,7 +1113,7 @@ export default function App() {
           {TABS.map(t=>(
             <button key={t.key} onClick={()=>setTab(t.key)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",border:"none",cursor:"pointer",background:"transparent",color:tab===t.key?"var(--gold)":"var(--txd)",transition:"color .2s"}}>
               <span style={{fontSize:18,lineHeight:1}}>{t.icon}</span>
-              <span style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.06em"}}>{t.label}</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.06em"}}>{t.label}</span>
             </button>
           ))}
         </nav>
