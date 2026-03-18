@@ -59,6 +59,28 @@ const G = () => (
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
       animation:shimmer 3s linear infinite;
     }
+
+    /* ── Responsive ── */
+    .r-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .r-grid-daily{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+    .r-sticky{position:sticky;top:74px}
+    .r-nav-desktop{display:flex;gap:1px}
+    .r-nav-mobile{display:none}
+    .r-xp{display:flex}
+    @media(max-width:640px){
+      .r-grid2{grid-template-columns:1fr}
+      .r-grid-daily{grid-template-columns:1fr}
+      .r-sticky{position:static}
+      .r-nav-desktop{display:none}
+      .r-nav-mobile{
+        display:flex;position:fixed;bottom:0;left:0;right:0;
+        background:rgba(8,8,9,.97);backdrop-filter:blur(16px);
+        border-top:1px solid rgba(255,255,255,0.07);z-index:100;
+        padding:6px 0 max(10px,env(safe-area-inset-bottom))
+      }
+      .r-xp{display:none}
+      .r-main{padding-bottom:90px!important}
+    }
   `}</style>
 );
 
@@ -217,7 +239,7 @@ function IdentityCore({ data, onChange }) {
           <Tag color="blue">Vizyon Eksenleri</Tag>
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+        <div className="r-grid2">
           <Card accent="red">
             <FieldLabel color="var(--red)">Anti-Vizyon — Kaçtığın Hayat</FieldLabel>
             <textarea value={data.antiVision} onChange={e=>up("antiVision",e.target.value)}
@@ -239,7 +261,7 @@ function IdentityCore({ data, onChange }) {
           <Tag color="green">Ikigai Kesişimi</Tag>
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+        <div className="r-grid2" style={{marginBottom:14}}>
           {ikigaiFields.map(f=>(
             <Card key={f.key} accent={f.accent}>
               <FieldLabel color={f.color}>{f.label}</FieldLabel>
@@ -544,12 +566,12 @@ function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDon
       <div className="fu" style={{marginBottom:20}}>
         <DayScore morning={morningItems} mDone={morningDone} habits={habits} hDone={habitsDone} streak={streak} sessions={sessions}/>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,alignItems:"start"}}>
+      <div className="r-grid-daily">
         <div style={{display:"flex",flexDirection:"column",gap:18}}>
           <div className="fu1"><MorningStack items={morningItems} done={morningDone} onToggle={onToggleMorning}/></div>
           <div className="fu2"><HabitTracker habits={habits} done={habitsDone} onToggle={onToggleHabit}/></div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:18,position:"sticky",top:74}}>
+        <div className="r-sticky" style={{display:"flex",flexDirection:"column",gap:18}}>
           <div className="fu1">
             <DeepWorkTimer onSession={()=>setSessions(s=>s+1)} xp={xp} setXp={setXp}/>
           </div>
@@ -909,7 +931,7 @@ function Progress({ xp, streak }) {
       </div>
 
       {/* Bottom grid */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
+      <div className="r-grid2" style={{gap:18}}>
         {/* Habits breakdown */}
         <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px 24px"}}>
           <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Alışkanlık Oranı (84 gün)</p>
@@ -1055,8 +1077,8 @@ export default function App() {
               <div style={{width:1,height:13,background:"var(--bh)"}}/>
               <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.14em"}}>{activeTab?.label.toUpperCase()}</span>
             </div>
-            {/* Nav */}
-            <nav style={{display:"flex",gap:1}}>
+            {/* Nav — desktop */}
+            <nav className="r-nav-desktop">
               {TABS.map(t=>(
                 <button key={t.key} onClick={()=>setTab(t.key)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s",letterSpacing:"0.04em",display:"flex",alignItems:"center",gap:5,marginBottom:"-1px"}}>
                   <span style={{opacity:.7}}>{t.icon}</span> {t.label}
@@ -1066,7 +1088,7 @@ export default function App() {
             {/* Right side */}
             <div style={{display:"flex",alignItems:"center",gap:16}}>
               <SaveDot saved={saved}/>
-              <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 14px",borderRadius:16}}>
+              <div className="r-xp" style={{alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 14px",borderRadius:16}}>
                 <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:15,fontWeight:600}}>{xp.toLocaleString()} XP</span>
                 <div style={{width:1,height:11,background:"var(--bh)"}}/>
                 <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>🔥 {streak}</span>
@@ -1078,13 +1100,23 @@ export default function App() {
         </header>
 
         {/* ── Content ── */}
-        <main style={{maxWidth:940,margin:"0 auto",padding:"32px 24px 80px"}}>
+        <main className="r-main" style={{maxWidth:940,margin:"0 auto",padding:"32px 24px 80px"}}>
           {tab==="identity" && <IdentityCore data={identity} onChange={setIdentity}/>}
           {tab==="northstar"&& <NorthStar data={northStar} onChange={setNS}/>}
           {tab==="daily"    && <DailyOS morningItems={DEF_MORNING} morningDone={morningDone} onToggleMorning={toggleMorning} habits={DEF_HABITS} habitsDone={habitsDone} onToggleHabit={toggleHabit} streak={streak} onEndDay={handleEndDay} xp={xp} setXp={setXp}/>}
           {tab==="journal"  && <MindJournal/>}
           {tab==="progress" && <Progress xp={xp} streak={streak}/>}
         </main>
+
+        {/* ── Mobile bottom nav ── */}
+        <nav className="r-nav-mobile">
+          {TABS.map(t=>(
+            <button key={t.key} onClick={()=>setTab(t.key)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",border:"none",cursor:"pointer",background:"transparent",color:tab===t.key?"var(--gold)":"var(--txd)",transition:"color .2s"}}>
+              <span style={{fontSize:18,lineHeight:1}}>{t.icon}</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.06em"}}>{t.label}</span>
+            </button>
+          ))}
+        </nav>
       </div>
     </>
   );
