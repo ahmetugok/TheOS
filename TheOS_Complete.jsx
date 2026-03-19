@@ -5,7 +5,6 @@
 // ═══════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
 
 /* ─────────────────────────── GLOBAL STYLES ─────────────────────────── */
 const G = () => (
@@ -60,28 +59,6 @@ const G = () => (
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
       animation:shimmer 3s linear infinite;
     }
-
-    /* ── Responsive ── */
-    .r-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    .r-grid-daily{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
-    .r-sticky{position:sticky;top:74px}
-    .r-nav-desktop{display:flex;gap:1px}
-    .r-nav-mobile{display:none}
-    .r-xp{display:flex}
-    @media(max-width:640px){
-      .r-grid2{grid-template-columns:1fr}
-      .r-grid-daily{grid-template-columns:1fr}
-      .r-sticky{position:static}
-      .r-nav-desktop{display:none}
-      .r-nav-mobile{
-        display:flex;position:fixed;bottom:0;left:0;right:0;
-        background:rgba(8,8,9,.97);backdrop-filter:blur(16px);
-        border-top:1px solid rgba(255,255,255,0.07);z-index:100;
-        padding:6px 0 max(10px,env(safe-area-inset-bottom))
-      }
-      .r-xp{display:none}
-      .r-main{padding-bottom:90px!important}
-    }
   `}</style>
 );
 
@@ -129,11 +106,11 @@ const Tag = ({ children, color = "gold" }) => {
     rose:  ["var(--rose-s)",  "var(--rose)",  "rgba(184,92,110,.18)"],
   };
   const [bg, fg, border] = map[color] || map.gold;
-  return <span style={{ display:"inline-flex", alignItems:"center", fontSize:11, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", background:bg, color:fg, border:`1px solid ${border}`, padding:"3px 8px", borderRadius:3 }}>{children}</span>;
+  return <span style={{ display:"inline-flex", alignItems:"center", fontSize:9, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", background:bg, color:fg, border:`1px solid ${border}`, padding:"3px 8px", borderRadius:3 }}>{children}</span>;
 };
 
 const FieldLabel = ({ children, color = "var(--txd)" }) => (
-  <p style={{ fontSize:11, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", color, fontFamily:"var(--fm)", marginBottom:10 }}>{children}</p>
+  <p style={{ fontSize:9, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", color, fontFamily:"var(--fm)", marginBottom:10 }}>{children}</p>
 );
 
 const Card = ({ children, accent, style = {} }) => {
@@ -153,7 +130,7 @@ const Card = ({ children, accent, style = {} }) => {
 const Divider = ({ label }) => (
   <div style={{ display:"flex", alignItems:"center", gap:10, margin:"4px 0" }}>
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
-    {label && <span style={{ fontSize:11, letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--txd)", fontFamily:"var(--fm)" }}>{label}</span>}
+    {label && <span style={{ fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--txd)", fontFamily:"var(--fm)" }}>{label}</span>}
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
   </div>
 );
@@ -161,7 +138,7 @@ const Divider = ({ label }) => (
 const SectionHead = ({ tag, tagColor, title }) => (
   <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:18 }}>
     <Tag color={tagColor}>{tag}</Tag>
-    {title && <span style={{ fontSize:14, color:"var(--txm)", fontFamily:"var(--fm)" }}>{title}</span>}
+    {title && <span style={{ fontSize:12, color:"var(--txm)", fontFamily:"var(--fm)" }}>{title}</span>}
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
   </div>
 );
@@ -169,7 +146,7 @@ const SectionHead = ({ tag, tagColor, title }) => (
 const SaveDot = ({ saved }) => (
   <div style={{ display:"flex", alignItems:"center", gap:6, opacity:.55 }}>
     <div style={{ width:5, height:5, borderRadius:"50%", background:saved?"var(--green)":"var(--amber)", transition:"background .3s", animation:saved?"none":"pulse 1.2s infinite" }} />
-    <span style={{ fontSize:12, color:"var(--txd)", fontFamily:"var(--fm)" }}>{saved?"kaydedildi":"kaydediliyor"}</span>
+    <span style={{ fontSize:10, color:"var(--txd)", fontFamily:"var(--fm)" }}>{saved?"kaydedildi":"kaydediliyor"}</span>
   </div>
 );
 
@@ -226,11 +203,11 @@ function IdentityCore({ data, onChange }) {
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
         <Card accent="gold">
-          <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--gold)",letterSpacing:"0.06em",marginBottom:12}}>"Ben … tipinde biriyim."</p>
+          <p style={{fontFamily:"var(--fd)",fontSize:12,fontStyle:"italic",color:"var(--gold)",letterSpacing:"0.06em",marginBottom:12}}>"Ben … tipinde biriyim."</p>
           <textarea value={data.statement} onChange={e=>up("statement",e.target.value)}
             placeholder="Zorluklardan kaçmayan, her gün vizyonuma doğru istikrarlı adımlar atan biriyim."
             rows={2} style={{fontFamily:"var(--fd)",fontSize:21,fontWeight:300,fontStyle:"italic",lineHeight:1.5,width:"100%"}}/>
-          <p style={{fontSize:13,color:"var(--txd)",marginTop:10,lineHeight:1.6}}>Kimlik önce yazılır — davranışlar onu takip eder.</p>
+          <p style={{fontSize:11,color:"var(--txd)",marginTop:10,lineHeight:1.6}}>Kimlik önce yazılır — davranışlar onu takip eder.</p>
         </Card>
       </div>
 
@@ -240,18 +217,18 @@ function IdentityCore({ data, onChange }) {
           <Tag color="blue">Vizyon Eksenleri</Tag>
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
-        <div className="r-grid2">
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
           <Card accent="red">
             <FieldLabel color="var(--red)">Anti-Vizyon — Kaçtığın Hayat</FieldLabel>
             <textarea value={data.antiVision} onChange={e=>up("antiVision",e.target.value)}
               placeholder="Başkalarının hayallerini inşa eden, akşamları yorgunluktan ekrana bakan biri..."
-              rows={5} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
+              rows={5} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
           </Card>
           <Card accent="blue">
             <FieldLabel color="var(--blue)">İdeal Vizyon — Kazandığın Hayat</FieldLabel>
             <textarea value={data.idealVision} onChange={e=>up("idealVision",e.target.value)}
               placeholder="Kendi zamanını kontrol eden, özgürce üreten, zihinsel zirvede olan..."
-              rows={5} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
+              rows={5} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
           </Card>
         </div>
       </div>
@@ -262,12 +239,12 @@ function IdentityCore({ data, onChange }) {
           <Tag color="green">Ikigai Kesişimi</Tag>
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
-        <div className="r-grid2" style={{marginBottom:14}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
           {ikigaiFields.map(f=>(
             <Card key={f.key} accent={f.accent}>
               <FieldLabel color={f.color}>{f.label}</FieldLabel>
               <textarea value={data.ikigai[f.key]} onChange={e=>upI(f.key,e.target.value)}
-                rows={3} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
+                rows={3} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
             </Card>
           ))}
         </div>
@@ -308,13 +285,13 @@ function NorthStar({ data, onChange }) {
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
                     <Tag color={h.accent}>{h.label}</Tag>
                   </div>
-                  <p style={{fontSize:14,color:"var(--txd)",marginBottom:12,lineHeight:1.6}}>{h.sub}</p>
+                  <p style={{fontSize:12,color:"var(--txd)",marginBottom:12,lineHeight:1.6}}>{h.sub}</p>
                   <input type="text" value={data[h.key].goal} onChange={e=>up(h.key,"goal",e.target.value)}
                     placeholder="Hedef..."
                     style={{fontFamily:"var(--fd)",fontSize:19,fontWeight:400,lineHeight:1.4,color:"var(--tx)",width:"100%",padding:"4px 0",borderBottom:"1px solid var(--b)",marginBottom:12,display:"block"}}/>
                   <FieldLabel>Neden bu hedef?</FieldLabel>
                   <textarea value={data[h.key].why} onChange={e=>up(h.key,"why",e.target.value)}
-                    placeholder="Gerçek motivasyon..." rows={2} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
+                    placeholder="Gerçek motivasyon..." rows={2} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
                 </div>
               </div>
             </Card>
@@ -327,7 +304,7 @@ function NorthStar({ data, onChange }) {
         <Card style={{marginTop:16}}>
           <FieldLabel>Kısıtlamalar — Asla Feda Etmeyeceklerin</FieldLabel>
           <textarea value={data.constraints} onChange={e=>onChange({...data,constraints:e.target.value})}
-            placeholder="Uyku düzenim, ailem, fiziksel antrenmanım..." rows={3} style={{fontSize:16,lineHeight:1.75,width:"100%"}}/>
+            placeholder="Uyku düzenim, ailem, fiziksel antrenmanım..." rows={3} style={{fontSize:14,lineHeight:1.75,width:"100%"}}/>
         </Card>
       </div>
     </div>
@@ -357,12 +334,12 @@ function MorningStack({ items, done, onToggle }) {
               <div style={{width:17,height:17,borderRadius:4,flexShrink:0,border:`1.5px solid ${d?"var(--amber)":"var(--txd)"}`,background:d?"var(--amber)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}>
                 {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#080809" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-              <span style={{fontSize:15,flex:1,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none",textDecorationColor:"var(--txd)"}}>{item.text}</span>
+              <span style={{fontSize:13,flex:1,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none",textDecorationColor:"var(--txd)"}}>{item.text}</span>
             </div>
           );
         })}
       </div>
-      <p style={{fontFamily:"var(--fm)",fontSize:12,color:pct===100?"var(--amber)":"var(--txd)",marginTop:12,textAlign:"right"}}>{completed}/{items.length}</p>
+      <p style={{fontFamily:"var(--fm)",fontSize:10,color:pct===100?"var(--amber)":"var(--txd)",marginTop:12,textAlign:"right"}}>{completed}/{items.length}</p>
     </div>
   );
 }
@@ -386,15 +363,15 @@ function HabitTracker({ habits, done, onToggle }) {
                   strokeLinecap="round" strokeDasharray={94.25} strokeDashoffset={d?0:94.25}
                   style={{transition:"stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)",opacity:d?1:.2}}/>
               </svg>
-              <span style={{fontSize:16,flex:1,fontWeight:500,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none"}}>{h.text}</span>
+              <span style={{fontSize:14,flex:1,fontWeight:500,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none"}}>{h.text}</span>
               <div style={{width:7,height:7,borderRadius:"50%",background:d?h.color:"var(--bh)",transition:"background .3s"}}/>
             </div>
           );
         })}
       </div>
       <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid var(--b)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <span style={{fontSize:14,color:"var(--txd)"}}>Bugünkü skor</span>
-        <span style={{fontFamily:"var(--fm)",fontSize:20,color:completed===habits.length?"var(--gold)":"var(--txm)"}}>{completed}<span style={{fontSize:14,color:"var(--txd)"}}>/{habits.length}</span></span>
+        <span style={{fontSize:12,color:"var(--txd)"}}>Bugünkü skor</span>
+        <span style={{fontFamily:"var(--fm)",fontSize:20,color:completed===habits.length?"var(--gold)":"var(--txm)"}}>{completed}<span style={{fontSize:12,color:"var(--txd)"}}>/{habits.length}</span></span>
       </div>
     </div>
   );
@@ -413,8 +390,7 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
   const totalRef = useRef(PRESETS[0].sec);
 
   const progress = 1 - secs / totalRef.current;
-  const screenW = typeof window !== "undefined" ? window.innerWidth : 400;
-  const SIZE = focusMode ? Math.min(260, screenW - 80) : 180;
+  const SIZE = focusMode ? 260 : 180;
   const R = (SIZE - 6) / 2;
   const C = 2 * Math.PI * R;
   const offset = C * (1 - progress);
@@ -460,46 +436,44 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
       </svg>
       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
         <span style={{fontFamily:"var(--fm)",fontSize:focusMode?52:32,fontWeight:300,letterSpacing:"0.04em",color:running?"var(--tx)":"var(--txm)"}}>{mins}:{sec2}</span>
-        {!focusMode&&<span style={{fontSize:11,color:"var(--txd)",letterSpacing:"0.12em",textTransform:"uppercase",marginTop:2}}>{running?"odakta":"hazır"}</span>}
+        {!focusMode&&<span style={{fontSize:9,color:"var(--txd)",letterSpacing:"0.12em",textTransform:"uppercase",marginTop:2}}>{running?"odakta":"hazır"}</span>}
       </div>
     </div>
   );
 
-  const focusOverlay = (
-    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:9999,background:"#030304",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px",paddingBottom:"max(24px, env(safe-area-inset-bottom))",animation:"fi .3s ease"}}>
-      {toast&&<div style={{position:"absolute",top:32,background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 20px",borderRadius:20,fontFamily:"var(--fm)",fontSize:14}}>{toast}</div>}
-      <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:36}}>{project||"Derin Odak"}</p>
+  if(focusMode) return (
+    <div style={{position:"fixed",inset:0,zIndex:200,background:"#030304",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fi .3s ease"}}>
+      {toast&&<div style={{position:"absolute",top:32,background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 20px",borderRadius:20,fontFamily:"var(--fm)",fontSize:12}}>{toast}</div>}
+      <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:44}}>{project||"Derin Odak"}</p>
       {timerCore}
-      <div style={{marginTop:36,display:"flex",gap:14}}>
-        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:15,fontWeight:600,padding:"11px 32px",borderRadius:8,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304"}}>{running?"Duraklat":"Başlat"}</button>
-        <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:15,padding:"11px 22px",borderRadius:8,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
+      <div style={{marginTop:44,display:"flex",gap:14}}>
+        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:13,fontWeight:600,padding:"11px 32px",borderRadius:8,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304"}}>{running?"Duraklat":"Başlat"}</button>
+        <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:13,padding:"11px 22px",borderRadius:8,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
       </div>
-      {sessions>0&&<p style={{marginTop:24,fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
+      {sessions>0&&<p style={{marginTop:28,fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
     </div>
   );
-
-  if(focusMode) return createPortal(focusOverlay, document.body);
 
   return (
     <div style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px"}}>
-      {toast&&<div style={{marginBottom:12,background:"var(--gold-s)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"7px 14px",borderRadius:8,fontFamily:"var(--fm)",fontSize:13,textAlign:"center"}}>{toast}</div>}
+      {toast&&<div style={{marginBottom:12,background:"var(--gold-s)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"7px 14px",borderRadius:8,fontFamily:"var(--fm)",fontSize:11,textAlign:"center"}}>{toast}</div>}
       <SectionHead tag="Derin Odak" tagColor="violet"/>
       <div style={{marginBottom:16,padding:"9px 12px",background:"var(--s2)",borderRadius:10,border:"1px solid var(--b)"}}>
-        <p style={{fontSize:11,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:5}}>Aktif Görev</p>
-        <input value={project} onChange={e=>setProject(e.target.value)} placeholder="Ne üzerinde çalışıyorsun?" style={{fontSize:15,width:"100%"}}/>
+        <p style={{fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:5}}>Aktif Görev</p>
+        <input value={project} onChange={e=>setProject(e.target.value)} placeholder="Ne üzerinde çalışıyorsun?" style={{fontSize:13,width:"100%"}}/>
       </div>
       <div style={{display:"flex",gap:8,marginBottom:20}}>
         {PRESETS.map(p=>(
-          <button key={p.label} onClick={()=>pick(p)} style={{flex:1,padding:"7px 0",borderRadius:8,border:`1px solid ${preset.label===p.label?"var(--gold)":"var(--b)"}`,background:preset.label===p.label?"var(--gold-s)":"transparent",color:preset.label===p.label?"var(--gold)":"var(--txd)",fontSize:14,fontFamily:"var(--fm)",cursor:"pointer",transition:"all .2s"}}>{p.label}</button>
+          <button key={p.label} onClick={()=>pick(p)} style={{flex:1,padding:"7px 0",borderRadius:8,border:`1px solid ${preset.label===p.label?"var(--gold)":"var(--b)"}`,background:preset.label===p.label?"var(--gold-s)":"transparent",color:preset.label===p.label?"var(--gold)":"var(--txd)",fontSize:12,fontFamily:"var(--fm)",cursor:"pointer",transition:"all .2s"}}>{p.label}</button>
         ))}
       </div>
       <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>{timerCore}</div>
       <div style={{display:"flex",gap:10}}>
-        <button onClick={running?pause:start} style={{flex:2,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:running?"var(--s3)":"var(--gold)",color:running?"var(--tx)":"#030304",fontSize:15,fontWeight:600,fontFamily:"var(--fb)",transition:"all .2s"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
-        <button onClick={reset} style={{flex:1,padding:"11px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:15,fontFamily:"var(--fb)"}}>↺</button>
-        <button onClick={()=>{if(!running)start();setFocusMode(true);}} title="Tam ekran" style={{padding:"11px 13px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:17}}>⛶</button>
+        <button onClick={running?pause:start} style={{flex:2,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:running?"var(--s3)":"var(--gold)",color:running?"var(--tx)":"#030304",fontSize:13,fontWeight:600,fontFamily:"var(--fb)",transition:"all .2s"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
+        <button onClick={reset} style={{flex:1,padding:"11px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:13,fontFamily:"var(--fb)"}}>↺</button>
+        <button onClick={()=>{if(!running)start();setFocusMode(true);}} title="Tam ekran" style={{padding:"11px 13px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:15}}>⛶</button>
       </div>
-      {sessions>0&&<p style={{marginTop:12,textAlign:"center",fontFamily:"var(--fm)",fontSize:13,color:"var(--gold)"}}>◆ {sessions} seans · {sessions*Math.round(preset.sec/60)} dk odak</p>}
+      {sessions>0&&<p style={{marginTop:12,textAlign:"center",fontFamily:"var(--fm)",fontSize:11,color:"var(--gold)"}}>◆ {sessions} seans · {sessions*Math.round(preset.sec/60)} dk odak</p>}
     </div>
   );
 }
@@ -513,10 +487,10 @@ function DayScore({ morning, mDone, habits, hDone, streak, sessions }) {
   return (
     <div style={{background:"var(--s1)",border:`1px solid ${overall>=80?"var(--gold-m)":"var(--b)"}`,borderRadius:16,padding:"20px 24px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",transition:"border-color .3s"}}>
       <div style={{flex:1,minWidth:100}}>
-        <p style={{fontSize:11,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:4}}>Günün Skoru</p>
+        <p style={{fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:4}}>Günün Skoru</p>
         <div style={{display:"flex",alignItems:"baseline",gap:4}}>
           <span style={{fontFamily:"var(--fd)",fontSize:38,fontWeight:600,color:scoreColor}}>{overall}</span>
-          <span style={{fontSize:15,color:"var(--txd)"}}>/ 100</span>
+          <span style={{fontSize:13,color:"var(--txd)"}}>/ 100</span>
         </div>
       </div>
       <div style={{width:1,height:36,background:"var(--b)"}}/>
@@ -528,7 +502,7 @@ function DayScore({ morning, mDone, habits, hDone, streak, sessions }) {
           {label:"🔥 Seri",  val:`${streak} gün`,                                               c:"var(--gold)"},
         ].map(s=>(
           <div key={s.label}>
-            <p style={{fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:3}}>{s.label}</p>
+            <p style={{fontSize:9,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:3}}>{s.label}</p>
             <p style={{fontFamily:"var(--fm)",fontSize:17,color:s.c}}>{s.val}</p>
           </div>
         ))}
@@ -543,10 +517,10 @@ function EndDayModal({ onClose, onConfirm }) {
     <div style={{position:"fixed",inset:0,zIndex:150,background:"rgba(4,4,5,.88)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div style={{background:"var(--s1)",border:"1px solid var(--bh)",borderRadius:20,padding:"34px 38px",maxWidth:360,width:"90%",animation:"fu .25s ease"}}>
         <p style={{fontFamily:"var(--fd)",fontSize:26,fontStyle:"italic",color:"var(--tx)",marginBottom:12}}>Günü kapat?</p>
-        <p style={{fontSize:15,color:"var(--txd)",lineHeight:1.7,marginBottom:26}}>Sabah ritüeli ve alışkanlıklar sıfırlanacak. Seri sayacın güncellenecek.</p>
+        <p style={{fontSize:13,color:"var(--txd)",lineHeight:1.7,marginBottom:26}}>Sabah ritüeli ve alışkanlıklar sıfırlanacak. Seri sayacın güncellenecek.</p>
         <div style={{display:"flex",gap:12}}>
-          <button onClick={onConfirm} style={{flex:1,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304",fontSize:15,fontWeight:600,fontFamily:"var(--fb)"}}>Kapat & Senkronize Et</button>
-          <button onClick={onClose} style={{padding:"11px 18px",borderRadius:10,cursor:"pointer",border:"1px solid var(--b)",background:"transparent",color:"var(--txd)",fontSize:15,fontFamily:"var(--fb)"}}>Geri</button>
+          <button onClick={onConfirm} style={{flex:1,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304",fontSize:13,fontWeight:600,fontFamily:"var(--fb)"}}>Kapat & Senkronize Et</button>
+          <button onClick={onClose} style={{padding:"11px 18px",borderRadius:10,cursor:"pointer",border:"1px solid var(--b)",background:"transparent",color:"var(--txd)",fontSize:13,fontFamily:"var(--fb)"}}>Geri</button>
         </div>
       </div>
     </div>
@@ -570,22 +544,22 @@ function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDon
       <div className="fu" style={{marginBottom:20}}>
         <DayScore morning={morningItems} mDone={morningDone} habits={habits} hDone={habitsDone} streak={streak} sessions={sessions}/>
       </div>
-      <div className="r-grid-daily">
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,alignItems:"start"}}>
         <div style={{display:"flex",flexDirection:"column",gap:18}}>
           <div className="fu1"><MorningStack items={morningItems} done={morningDone} onToggle={onToggleMorning}/></div>
           <div className="fu2"><HabitTracker habits={habits} done={habitsDone} onToggle={onToggleHabit}/></div>
         </div>
-        <div className="r-sticky" style={{display:"flex",flexDirection:"column",gap:18}}>
+        <div style={{display:"flex",flexDirection:"column",gap:18,position:"sticky",top:74}}>
           <div className="fu1">
             <DeepWorkTimer onSession={()=>setSessions(s=>s+1)} xp={xp} setXp={setXp}/>
           </div>
           <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"20px 22px"}}>
-            <p style={{fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:10}}>Bugünün Tek Odağı</p>
+            <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:10}}>Bugünün Tek Odağı</p>
             <textarea value={focusText} onChange={e=>setFocusText(e.target.value)}
               placeholder="Bugün tek şeyi yapabilseydin ne olurdu?" rows={3}
-              style={{width:"100%",fontSize:16,lineHeight:1.75,fontFamily:"var(--fd)",fontStyle:"italic"}}/>
+              style={{width:"100%",fontSize:14,lineHeight:1.75,fontFamily:"var(--fd)",fontStyle:"italic"}}/>
           </div>
-          <button onClick={()=>setShowEnd(true)} style={{width:"100%",padding:"12px",borderRadius:12,border:"1px solid var(--bh)",cursor:"pointer",background:"var(--s2)",color:"var(--txm)",fontSize:15,fontFamily:"var(--fb)",fontWeight:500,transition:"all .2s"}}>
+          <button onClick={()=>setShowEnd(true)} style={{width:"100%",padding:"12px",borderRadius:12,border:"1px solid var(--bh)",cursor:"pointer",background:"var(--s2)",color:"var(--txm)",fontSize:13,fontFamily:"var(--fb)",fontWeight:500,transition:"all .2s"}}>
             Günü Kapat & Senkronize Et ↓
           </button>
         </div>
@@ -598,58 +572,108 @@ function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDon
 //  TAB 4 — MIND JOURNAL
 // ════════════════════════════════════════════════════════
 function AutopilotBreaker() {
-  const [idx, setIdx]       = useState(0);
+  const [idx, setIdx]         = useState(0);
   const [answers, setAnswers] = useState({});
-  const [anim, setAnim]     = useState(false);
-  const [saved, setSaved]   = useState(false);
+  const [dateView, setDateView] = useState(todayKey());
+  const [savedQs, setSavedQs] = useState({});  // store'dan gelen kayıtlı cevaplar
+  const [anim, setAnim]       = useState(false);
+  const [saving, setSaving]   = useState(false);
+  const [savedMsg, setSavedMsg] = useState(false);
   const ref = useRef(null);
   const q = AUTOPILOT_QS[idx];
+  const isToday = dateView === todayKey();
+  const pastDays = lastNDays(8).slice(0,-1).reverse();
+
+  // Seçili tarihin kayıtlarını yükle
+  useEffect(()=>{
+    (async()=>{
+      const d = await store.get(`theos_ap_${dateView}`) || {};
+      setSavedQs(d);
+      // Bugün görüntüleniyorsa local answers'ı koru, geçmişte sıfırla
+      if(dateView !== todayKey()) setAnswers({});
+    })();
+  },[dateView]);
 
   const goTo = (i) => { if(i===idx)return; setAnim(true); setTimeout(()=>{setIdx(i);setAnim(false);ref.current?.focus();},260); };
+
   const handleSave = async () => {
     if(!answers[q.id]?.trim())return;
-    await store.set(`theos_ap_${todayKey()}`, { ...(await store.get(`theos_ap_${todayKey()}`)||{}), [q.id]:answers[q.id] });
-    setSaved(true); setTimeout(()=>setSaved(false),1800);
+    setSaving(true);
+    const existing = await store.get(`theos_ap_${dateView}`) || {};
+    const updated = { ...existing, [q.id]: answers[q.id] };
+    await store.set(`theos_ap_${dateView}`, updated);
+    setSavedQs(updated);
+    setSaving(false); setSavedMsg(true); setTimeout(()=>setSavedMsg(false),1800);
   };
-  const answer = answers[q.id]||"";
+
+  // Görüntülenen cevap: bugün → local state, geçmiş → store
+  const displayAnswer = isToday ? (answers[q.id]||savedQs[q.id]||"") : (savedQs[q.id]||"");
+  const answeredCount = Object.keys(savedQs).length;
 
   return (
     <div style={{maxWidth:640,margin:"0 auto"}}>
-      <div className="fu" style={{marginBottom:28}}>
+      <div className="fu" style={{marginBottom:20}}>
         <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:8}}>
           <h2 style={{fontFamily:"var(--fd)",fontSize:28,fontWeight:400,fontStyle:"italic",color:"var(--tx)"}}>Otopilotu Kes</h2>
           <span className="ink" style={{flex:1,marginBottom:5}}/>
         </div>
-        <p style={{fontSize:15,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Hayat kelimelerde değil, olaylarda yaşanır. Şu anki gerçekliğinle yüzleş.</p>
+        <p style={{fontSize:13,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Hayat kelimelerde değil, olaylarda yaşanır. Şu anki gerçekliğinle yüzleş.</p>
       </div>
-      <div className="fu1" style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:24}}>
-        {AUTOPILOT_QS.map((qs,i)=>(
-          <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:13,padding:"4px 11px",borderRadius:16,border:`1px solid ${i===idx?qs.color:"var(--b)"}`,background:i===idx?qs.bg:"transparent",color:i===idx?qs.color:"var(--txd)",cursor:"pointer",transition:"all .2s"}}>{i+1}</button>
+
+      {/* Tarih seçici */}
+      <div className="fu1" style={{display:"flex",gap:6,marginBottom:20,overflowX:"auto",paddingBottom:2}}>
+        {[todayKey(),...pastDays.slice(0,6)].map(k=>(
+          <button key={k} onClick={()=>setDateView(k)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"5px 12px",borderRadius:14,border:`1px solid ${dateView===k?"var(--rose)":"var(--b)"}`,background:dateView===k?"var(--rose-s)":"transparent",color:dateView===k?"var(--rose)":"var(--txd)",cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap",flexShrink:0}}>
+            {k===todayKey()?"bugün":new Date(k).toLocaleDateString("tr-TR",{day:"numeric",month:"short"})}
+          </button>
         ))}
-        <button onClick={()=>goTo(Math.floor(Math.random()*AUTOPILOT_QS.length))} style={{fontFamily:"var(--fm)",fontSize:13,padding:"4px 11px",borderRadius:16,border:"1px dashed var(--bh)",background:"transparent",color:"var(--txd)",cursor:"pointer",marginLeft:4}}>⟳</button>
       </div>
+
+      {/* Soru pill'leri — yanıtlananlar renkli */}
+      <div className="fu1" style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:20}}>
+        {AUTOPILOT_QS.map((qs,i)=>{
+          const hasAnswer = !!savedQs[qs.id];
+          return <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 11px",borderRadius:16,border:`1px solid ${i===idx?qs.color:hasAnswer?"rgba(255,255,255,.12)":"var(--b)"}`,background:i===idx?qs.bg:hasAnswer?"rgba(255,255,255,.04)":"transparent",color:i===idx?qs.color:hasAnswer?"var(--txm)":"var(--txd)",cursor:"pointer",transition:"all .2s",position:"relative"}}>
+            {i+1}{hasAnswer&&<span style={{position:"absolute",top:-3,right:-3,width:6,height:6,borderRadius:"50%",background:qs.color}}/>}
+          </button>;
+        })}
+        <button onClick={()=>goTo(Math.floor(Math.random()*AUTOPILOT_QS.length))} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 11px",borderRadius:16,border:"1px dashed var(--bh)",background:"transparent",color:"var(--txd)",cursor:"pointer",marginLeft:4}}>⟳</button>
+        {answeredCount>0&&<span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",alignSelf:"center",marginLeft:4}}>{answeredCount}/8 yanıtlandı</span>}
+      </div>
+
       <div className="fu2" style={{background:"var(--s1)",border:`1px solid ${q.color}20`,borderRadius:18,overflow:"hidden",marginBottom:16}}>
         <div style={{height:2,background:q.color,opacity:.55}}/>
         <div style={{padding:"28px 28px 24px"}}>
           <div style={{animation:anim?"swap .5s ease":"none"}}>
             <p style={{fontFamily:"var(--fd)",fontSize:20,fontStyle:"italic",color:"var(--tx)",lineHeight:1.55,marginBottom:8}}>{q.q}</p>
-            <p style={{fontSize:14,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:24}}>{q.hint}</p>
+            <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:24}}>{q.hint}</p>
           </div>
           <div style={{borderTop:`1px solid ${q.color}15`,paddingTop:18}}>
-            <textarea ref={ref} value={answer} onChange={e=>setAnswers(p=>({...p,[q.id]:e.target.value}))}
-              placeholder="Dürüstçe yaz. Sadece kendin için..." rows={6}
-              style={{width:"100%",fontSize:17,lineHeight:1.8,letterSpacing:"0.01em"}}/>
+            <textarea ref={ref}
+              value={isToday ? (answers[q.id]??savedQs[q.id]??"") : (savedQs[q.id]||"")}
+              onChange={e=>{ if(!isToday)return; setAnswers(p=>({...p,[q.id]:e.target.value})); }}
+              readOnly={!isToday}
+              placeholder={isToday?"Dürüstçe yaz. Sadece kendin için...":"(geçmiş kayıt — salt okunur)"}
+              rows={6} style={{width:"100%",fontSize:15,lineHeight:1.8,letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
           </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:14}}>
-            <span style={{fontFamily:"var(--fm)",fontSize:12,color:wc(answer)>10?q.color:"var(--txd)",transition:"color .3s"}}>{wc(answer)} kelime</span>
-            <button onClick={handleSave} disabled={!answer.trim()} style={{fontFamily:"var(--fm)",fontSize:13,padding:"7px 18px",borderRadius:8,border:`1px solid ${answer.trim()?q.color:"var(--b)"}`,background:saved?q.bg:"transparent",color:saved?q.color:answer.trim()?q.color:"var(--txd)",cursor:answer.trim()?"pointer":"default",transition:"all .25s"}}>{saved?"✓ kaydedildi":"kaydet"}</button>
+            <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>
+              {!isToday&&savedQs[q.id]
+                ? <span style={{color:"var(--rose)"}}>✓ {dateView === todayKey()?"bugün":new Date(dateView).toLocaleDateString("tr-TR",{day:"numeric",month:"short"})} kaydedildi</span>
+                : `${wc(answers[q.id]||"")} kelime`
+              }
+            </span>
+            {isToday&&<button onClick={handleSave} disabled={!answers[q.id]?.trim()}
+              style={{fontFamily:"var(--fm)",fontSize:11,padding:"7px 18px",borderRadius:8,border:`1px solid ${answers[q.id]?.trim()?q.color:"var(--b)"}`,background:savedMsg?q.bg:"transparent",color:savedMsg?q.color:answers[q.id]?.trim()?q.color:"var(--txd)",cursor:answers[q.id]?.trim()?"pointer":"default",transition:"all .25s"}}>
+              {saving?"...":savedMsg?"✓ kaydedildi":"kaydet"}
+            </button>}
           </div>
         </div>
       </div>
       <div className="fu3" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <button onClick={()=>goTo(Math.max(0,idx-1))} disabled={idx===0} style={{fontFamily:"var(--fm)",fontSize:14,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===0?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===0?.3:1,transition:"opacity .2s"}}>← önceki</button>
-        <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{idx+1} / {AUTOPILOT_QS.length}</span>
-        <button onClick={()=>goTo(Math.min(AUTOPILOT_QS.length-1,idx+1))} disabled={idx===AUTOPILOT_QS.length-1} style={{fontFamily:"var(--fm)",fontSize:14,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===AUTOPILOT_QS.length-1?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===AUTOPILOT_QS.length-1?.3:1,transition:"opacity .2s"}}>sonraki →</button>
+        <button onClick={()=>goTo(Math.max(0,idx-1))} disabled={idx===0} style={{fontFamily:"var(--fm)",fontSize:12,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===0?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===0?.3:1}}>← önceki</button>
+        <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>{idx+1} / {AUTOPILOT_QS.length}</span>
+        <button onClick={()=>goTo(Math.min(AUTOPILOT_QS.length-1,idx+1))} disabled={idx===AUTOPILOT_QS.length-1} style={{fontFamily:"var(--fm)",fontSize:12,padding:"7px 14px",borderRadius:8,border:"1px solid var(--b)",cursor:idx===AUTOPILOT_QS.length-1?"default":"pointer",background:"transparent",color:"var(--txm)",opacity:idx===AUTOPILOT_QS.length-1?.3:1}}>sonraki →</button>
       </div>
     </div>
   );
@@ -678,27 +702,27 @@ function BrainDump() {
           <h2 style={{fontFamily:"var(--fd)",fontSize:28,fontWeight:400,fontStyle:"italic",color:"var(--tx)"}}>Brain Dump</h2>
           <span className="ink" style={{flex:1,marginBottom:5}}/>
         </div>
-        <p style={{fontSize:15,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Zihnindeki her şeyi dışarı at. Filtre yok, yargı yok. Sadece ak.</p>
+        <p style={{fontSize:13,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Zihnindeki her şeyi dışarı at. Filtre yok, yargı yok. Sadece ak.</p>
       </div>
       <div className="fu1" style={{display:"flex",gap:7,marginBottom:20}}>
         {[todayKey(),...pastKeys.slice(0,5)].map(k=>(
-          <button key={k} onClick={()=>setDateView(k)} style={{fontFamily:"var(--fm)",fontSize:13,padding:"5px 12px",borderRadius:16,border:`1px solid ${dateView===k?"var(--amber)":"var(--b)"}`,background:dateView===k?"var(--amber-s)":"transparent",color:dateView===k?"var(--amber)":"var(--txd)",cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap"}}>
+          <button key={k} onClick={()=>setDateView(k)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"5px 12px",borderRadius:16,border:`1px solid ${dateView===k?"var(--amber)":"var(--b)"}`,background:dateView===k?"var(--amber-s)":"transparent",color:dateView===k?"var(--amber)":"var(--txd)",cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap"}}>
             {k===todayKey()?"bugün":new Date(k).toLocaleDateString("tr-TR",{day:"numeric",month:"short"})}
           </button>
         ))}
       </div>
       <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:18,overflow:"hidden"}}>
         <div style={{padding:"12px 22px",borderBottom:"1px solid var(--b)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>{fmtDate(dateView)}</span>
+          <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>{fmtDate(dateView)}</span>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontFamily:"var(--fm)",fontSize:13,color:wc(text)>50?"var(--amber)":"var(--txd)",transition:"color .3s"}}>{wc(text)} kelime</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:11,color:wc(text)>50?"var(--amber)":"var(--txd)",transition:"color .3s"}}>{wc(text)} kelime</span>
             <div style={{width:5,height:5,borderRadius:"50%",background:saving?"var(--amber)":"var(--green)",animation:saving?"pulse 1s infinite":"none",transition:"background .3s"}}/>
           </div>
         </div>
         <div style={{padding:"24px 28px",backgroundImage:isToday?"repeating-linear-gradient(transparent,transparent 31px,rgba(255,255,255,.022) 31px,rgba(255,255,255,.022) 32px)":"none",backgroundSize:"100% 32px",backgroundPositionY:"24px"}}>
           <textarea value={text} onChange={e=>handleChange(e.target.value)} readOnly={!isToday}
             placeholder={isToday?"Aklındaki her şeyi buraya dök.\n\nNe düşünüyorsun? Ne hissediyorsun? Neyi çözmek istiyorsun?\nFiltre yok. Sadece yaz.":"(geçmiş kayıt — salt okunur)"}
-            rows={16} style={{width:"100%",fontSize:17,lineHeight:"32px",letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
+            rows={16} style={{width:"100%",fontSize:15,lineHeight:"32px",letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
         </div>
       </div>
     </div>
@@ -706,71 +730,108 @@ function BrainDump() {
 }
 
 function WeeklyReview() {
-  const [review, setReview] = useState({});
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved]   = useState(false);
+  const [selectedWk, setSelectedWk] = useState(weekKey());
+  const [review, setReview]   = useState({});
+  const [saving, setSaving]   = useState(false);
+  const [saved, setSaved]     = useState(false);
   const saveT = useRef(null);
-  const wk = weekKey();
 
-  useEffect(()=>{(async()=>{const d=await store.get(`theos_review_${wk}`);if(d)setReview(d);})();},[]);
+  const weekKeys = Array.from({length:6},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-i*7);
+    const jan1=new Date(d.getFullYear(),0,1);
+    const w=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+    return `${d.getFullYear()}-W${String(w).padStart(2,"0")}`;
+  });
+
+  const isCurrentWeek = selectedWk === weekKey();
+
+  useEffect(()=>{
+    (async()=>{ const d=await store.get(`theos_review_${selectedWk}`); setReview(d||{}); })();
+  },[selectedWk]);
 
   const handleChange = (key, val) => {
-    const up = {...review,[key]:val}; setReview(up); setSaving(true);
+    if(!isCurrentWeek) return;
+    const up={...review,[key]:val}; setReview(up); setSaving(true);
     clearTimeout(saveT.current);
-    saveT.current = setTimeout(async()=>{ await store.set(`theos_review_${wk}`,up); setSaving(false); setSaved(true); setTimeout(()=>setSaved(false),1500); },700);
+    saveT.current=setTimeout(async()=>{ await store.set(`theos_review_${selectedWk}`,up); setSaving(false); setSaved(true); setTimeout(()=>setSaved(false),1500); },700);
   };
 
-  const getWeekRange = () => {
-    const d=new Date(), day=d.getDay()||7;
-    const mon=new Date(d); mon.setDate(d.getDate()-day+1);
-    const sun=new Date(mon); sun.setDate(mon.getDate()+6);
-    const f=dt=>dt.toLocaleDateString("tr-TR",{day:"numeric",month:"long"});
+  const getWeekRange = (wk) => {
+    const [yr,w]=wk.split("-W").map(Number);
+    const jan1=new Date(yr,0,1);
+    const mon=new Date(jan1.getTime()+(w-1)*7*86400000-(jan1.getDay()-1)*86400000);
+    const sun=new Date(mon.getTime()+6*86400000);
+    const f=dt=>dt.toLocaleDateString("tr-TR",{day:"numeric",month:"short"});
     return `${f(mon)} – ${f(sun)}`;
   };
   const done = WEEKLY_PROMPTS.filter(p=>(review[p.key]||"").trim().length>20).length;
 
   return (
     <div style={{maxWidth:640,margin:"0 auto"}}>
-      <div className="fu" style={{marginBottom:28}}>
+      <div className="fu" style={{marginBottom:20}}>
         <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:8}}>
           <h2 style={{fontFamily:"var(--fd)",fontSize:28,fontWeight:400,fontStyle:"italic",color:"var(--tx)"}}>Haftalık Review</h2>
           <span className="ink" style={{flex:1,marginBottom:5}}/>
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <p style={{fontSize:15,color:"var(--txd)",fontStyle:"italic"}}>{getWeekRange()}</p>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            {WEEKLY_PROMPTS.map(p=><div key={p.key} style={{width:7,height:7,borderRadius:"50%",background:(review[p.key]||"").trim().length>20?p.color:"var(--bh)",transition:"background .3s"}}/>)}
-            <span style={{fontFamily:"var(--fm)",fontSize:12,color:saving?"var(--amber)":saved?"var(--green)":"var(--txd)",marginLeft:4}}>{saving?"kayıt...":saved?"✓":`${done}/4`}</span>
-          </div>
+      </div>
+
+      {/* Hafta seçici */}
+      <div className="fu1" style={{display:"flex",gap:6,marginBottom:20,overflowX:"auto",paddingBottom:2}}>
+        {weekKeys.map((wk,i)=>(
+          <button key={wk} onClick={()=>setSelectedWk(wk)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"5px 12px",borderRadius:14,border:`1px solid ${selectedWk===wk?"var(--sage)":"var(--b)"}`,background:selectedWk===wk?"var(--sage-s)":"transparent",color:selectedWk===wk?"var(--sage)":"var(--txd)",cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap",flexShrink:0}}>
+            {i===0?"bu hafta":getWeekRange(wk)}
+          </button>
+        ))}
+      </div>
+
+      {/* Hafta özeti */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <p style={{fontSize:13,color:"var(--txd)",fontStyle:"italic"}}>{getWeekRange(selectedWk)}</p>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {WEEKLY_PROMPTS.map(p=><div key={p.key} style={{width:7,height:7,borderRadius:"50%",background:(review[p.key]||"").trim().length>20?p.color:"var(--bh)",transition:"background .3s"}}/>)}
+          <span style={{fontFamily:"var(--fm)",fontSize:10,color:saving?"var(--amber)":saved?"var(--green)":"var(--txd)",marginLeft:4}}>
+            {!isCurrentWeek?"geçmiş":saving?"kayıt...":saved?"✓":`${done}/4`}
+          </span>
         </div>
       </div>
-      <div className="fu1" style={{marginBottom:24,padding:"16px 20px",borderLeft:"2px solid var(--amber)",background:"var(--amber-s)",borderRadius:"0 10px 10px 0"}}>
-        <p style={{fontFamily:"var(--fd)",fontSize:17,fontStyle:"italic",color:"var(--txm)",lineHeight:1.8}}>"What gets reviewed gets improved. What gets ignored stays broken."</p>
-        <p style={{fontSize:13,color:"var(--txd)",marginTop:6,fontFamily:"var(--fm)"}}>— Dan Koe</p>
+
+      {!isCurrentWeek&&(
+        <div className="fu1" style={{marginBottom:16,padding:"10px 16px",background:"rgba(255,255,255,.03)",border:"1px solid var(--b)",borderRadius:10}}>
+          <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic"}}>📖 Geçmiş hafta — salt okunur</p>
+        </div>
+      )}
+
+      <div className="fu1" style={{marginBottom:20,padding:"14px 18px",borderLeft:"2px solid var(--amber)",background:"var(--amber-s)",borderRadius:"0 10px 10px 0"}}>
+        <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--txm)",lineHeight:1.8}}>"What gets reviewed gets improved. What gets ignored stays broken."</p>
+        <p style={{fontSize:11,color:"var(--txd)",marginTop:5,fontFamily:"var(--fm)"}}>— Dan Koe</p>
       </div>
-      <div style={{display:"flex",flexDirection:"column",gap:16}}>
+
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
         {WEEKLY_PROMPTS.map((p,i)=>{
-          const val = review[p.key]||"";
-          const filled = val.trim().length>20;
+          const val=review[p.key]||"";
+          const filled=val.trim().length>20;
           return (
             <div key={p.key} className={`fu${Math.min(i+1,3)}`} style={{background:"var(--s1)",border:`1px solid ${filled?`${p.color}25`:"var(--b)"}`,borderRadius:14,overflow:"hidden",transition:"border-color .3s"}}>
               <div style={{display:"flex"}}>
                 <div style={{width:3,flexShrink:0,background:filled?p.color:"var(--b)",transition:"background .3s"}}/>
-                <div style={{flex:1,padding:"20px 22px"}}>
+                <div style={{flex:1,padding:"18px 20px"}}>
                   <FieldLabel color={filled?p.color:"var(--txd)"}>{p.label}</FieldLabel>
-                  <p style={{fontSize:14,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:12}}>{p.hint}</p>
+                  <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:12}}>{p.hint}</p>
                   <textarea value={val} onChange={e=>handleChange(p.key,e.target.value)}
-                    placeholder="Yaz..." rows={p.key==="nextfocus"?2:3} style={{width:"100%",fontSize:16,lineHeight:1.75}}/>
-                  <p style={{fontSize:12,color:wc(val)>10?p.color:"var(--txd)",fontFamily:"var(--fm)",marginTop:6,textAlign:"right",transition:"color .3s"}}>{wc(val)} kelime</p>
+                    readOnly={!isCurrentWeek}
+                    placeholder={isCurrentWeek?"Yaz...":"(bu haftada kayıt yok)"}
+                    rows={p.key==="nextfocus"?2:3}
+                    style={{width:"100%",fontSize:14,lineHeight:1.75,color:isCurrentWeek?"var(--tx)":"var(--txm)"}}/>
+                  {wc(val)>0&&<p style={{fontSize:10,color:wc(val)>10?p.color:"var(--txd)",fontFamily:"var(--fm)",marginTop:5,textAlign:"right"}}>{wc(val)} kelime</p>}
                 </div>
               </div>
             </div>
           );
         })}
       </div>
-      {done===4&&<div className="fi" style={{marginTop:24,padding:"18px 22px",background:"var(--green-s)",border:"1px solid rgba(58,148,105,.2)",borderRadius:12,textAlign:"center"}}>
+      {isCurrentWeek&&done===4&&<div className="fi" style={{marginTop:20,padding:"16px 20px",background:"var(--green-s)",border:"1px solid rgba(58,148,105,.2)",borderRadius:12,textAlign:"center"}}>
         <p style={{fontFamily:"var(--fd)",fontSize:17,fontStyle:"italic",color:"var(--green)"}}>Bu haftanın review'u tamamlandı.</p>
-        <p style={{fontSize:14,color:"var(--txd)",marginTop:4}}>Refleksiyon yapan %1'in içindesin. Devam et.</p>
+        <p style={{fontSize:12,color:"var(--txd)",marginTop:4}}>Refleksiyon yapan %1'in içindesin. Devam et.</p>
       </div>}
     </div>
   );
@@ -788,7 +849,7 @@ function MindJournal() {
     <div>
       <div style={{display:"flex",gap:4,marginBottom:28,borderBottom:"1px solid var(--b)",paddingBottom:0}}>
         {JOURNAL_TABS.map(t=>(
-          <button key={t.key} onClick={()=>setSub(t.key)} style={{fontFamily:"var(--fm)",fontSize:14,padding:"8px 18px",border:"none",cursor:"pointer",background:"transparent",color:sub===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${sub===t.key?t.color:"transparent"}`,transition:"all .2s",marginBottom:-1,letterSpacing:"0.04em"}}>{t.label}</button>
+          <button key={t.key} onClick={()=>setSub(t.key)} style={{fontFamily:"var(--fm)",fontSize:12,padding:"8px 18px",border:"none",cursor:"pointer",background:"transparent",color:sub===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${sub===t.key?t.color:"transparent"}`,transition:"all .2s",marginBottom:-1,letterSpacing:"0.04em"}}>{t.label}</button>
         ))}
       </div>
       {sub==="autopilot"&&<AutopilotBreaker/>}
@@ -827,11 +888,11 @@ function StreakCalendar({ dayData }) {
   return (
     <div>
       <div style={{display:"flex",marginBottom:6,paddingLeft:26}}>
-        {weeks.map((_,wi)=>{const ml=mLabels.find(m=>m.wi===wi);return(<div key={wi} style={{flex:1,fontSize:11,fontFamily:"var(--fm)",color:ml?"var(--txd)":"transparent",letterSpacing:"0.06em"}}>{ml?.lbl||"·"}</div>);})}
+        {weeks.map((_,wi)=>{const ml=mLabels.find(m=>m.wi===wi);return(<div key={wi} style={{flex:1,fontSize:9,fontFamily:"var(--fm)",color:ml?"var(--txd)":"transparent",letterSpacing:"0.06em"}}>{ml?.lbl||"·"}</div>);})}
       </div>
       <div style={{display:"flex",gap:2}}>
         <div style={{display:"flex",flexDirection:"column",gap:2,marginRight:4}}>
-          {TR.map(d=><div key={d} style={{height:12,fontSize:10,fontFamily:"var(--fm)",color:"var(--txd)",display:"flex",alignItems:"center"}}>{d}</div>)}
+          {TR.map(d=><div key={d} style={{height:12,fontSize:8,fontFamily:"var(--fm)",color:"var(--txd)",display:"flex",alignItems:"center"}}>{d}</div>)}
         </div>
         {weeks.map((week,wi)=>(
           <div key={wi} style={{display:"flex",flexDirection:"column",gap:2,flex:1}}>
@@ -846,21 +907,48 @@ function StreakCalendar({ dayData }) {
       {tip&&(
         <div style={{marginTop:10,padding:"7px 14px",background:"var(--s2)",border:"1px solid var(--bh)",borderRadius:8,display:"inline-flex",alignItems:"center",gap:10}}>
           <div style={{width:9,height:9,borderRadius:2,background:cellC(tip.s)}}/>
-          <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txm)"}}>{fmtDate(tip.day)}</span>
-          <span style={{fontFamily:"var(--fm)",fontSize:13,color:tip.s?"var(--gold)":"var(--txd)"}}>{tip.s?`${tip.s}/4 tamamlandı`:"Kayıt yok"}</span>
+          <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txm)"}}>{fmtDate(tip.day)}</span>
+          <span style={{fontFamily:"var(--fm)",fontSize:11,color:tip.s?"var(--gold)":"var(--txd)"}}>{tip.s?`${tip.s}/4 tamamlandı`:"Kayıt yok"}</span>
         </div>
       )}
       <div style={{marginTop:10,display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}>
-        <span style={{fontSize:11,fontFamily:"var(--fm)",color:"var(--txd)"}}>az</span>
+        <span style={{fontSize:9,fontFamily:"var(--fm)",color:"var(--txd)"}}>az</span>
         {[0,1,2,3,4].map(s=><div key={s} style={{width:11,height:11,borderRadius:2,background:cellC(s)}}/>)}
-        <span style={{fontSize:11,fontFamily:"var(--fm)",color:"var(--txd)"}}>çok</span>
+        <span style={{fontSize:9,fontFamily:"var(--fm)",color:"var(--txd)"}}>çok</span>
       </div>
     </div>
   );
 }
 
 function Progress({ xp, streak }) {
-  const [dayData] = useState(genDemoData);
+  const [dayData, setDayData] = useState({});
+  const [logs, setLogs]       = useState([]);
+  const [loaded, setLoaded]   = useState(false);
+
+  useEffect(()=>{
+    (async()=>{
+      // Loglardan gerçek day data oluştur
+      const stored = await store.get("theos_logs") || [];
+      setLogs(stored);
+      // Her log entry için score → 0-4 arası normalize et
+      const data = {};
+      stored.forEach(e=>{
+        // dayScore 0-100 → 0-4 arası
+        data[e.date] = Math.round(e.dayScore / 25);
+      });
+      // Bugünkü aktif veriyi de ekle (henüz günü kapatmamışsa)
+      const td = await store.get(`theos_daily_${todayKey()}`);
+      if(td){
+        const mDone = Object.values(td.morningDone||{}).filter(Boolean).length;
+        const hDone = Object.values(td.habitsDone||{}).filter(Boolean).length;
+        const total = mDone + hDone;
+        if(total>0) data[todayKey()] = Math.min(4, Math.ceil(total/2));
+      }
+      setDayData(data);
+      setLoaded(true);
+    })();
+  },[]);
+
   const lvl      = levelFromXp(xp);
   const xpInLvl  = xp % 500;
   const lvlPct   = Math.round(xpInLvl/500*100);
@@ -869,12 +957,14 @@ function Progress({ xp, streak }) {
   const totalDays   = Object.values(dayData).filter(v=>v>0).length;
   const perfectDays = Object.values(dayData).filter(v=>v>=4).length;
 
-  const HABITS_STAT = [
-    {label:"Derin Odak",  pct:78,color:"var(--gold)"},
-    {label:"Antrenman",   pct:64,color:"var(--blue)"},
-    {label:"Okuma",       pct:71,color:"var(--green)"},
-    {label:"Üretim",      pct:43,color:"var(--violet)"},
-  ];
+  // Gerçek alışkanlık oranları loglardan
+  const habitNames = DEF_HABITS.map(h=>h.text);
+  const habitColors= {"Derin odak çalışması":"var(--gold)","Fiziksel antrenman":"var(--blue)","Stratejik okuma":"var(--green)","İçerik üretimi":"var(--amber)"};
+  const HABITS_STAT = habitNames.map(name=>({
+    label: name,
+    pct: logs.length ? Math.round(logs.filter(e=>e.habits?.includes(name)).length/logs.length*100) : 0,
+    color: habitColors[name]||"var(--gold)",
+  }));
   const MILESTONES = [
     {xp:500, label:"İlk seviye",  icon:"◎",done:true},
     {xp:1000,label:"1000 XP",    icon:"◉",done:xp>=1000},
@@ -899,29 +989,29 @@ function Progress({ xp, streak }) {
             </svg>
             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
               <span style={{fontFamily:"var(--fd)",fontSize:30,fontWeight:600,color:"var(--gold)"}}>{lvl}</span>
-              <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",letterSpacing:"0.1em"}}>LEVEL</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:8,color:"var(--txd)",letterSpacing:"0.1em"}}>LEVEL</span>
             </div>
           </div>
-          <p style={{fontFamily:"var(--fm)",fontSize:12,color:"var(--gold)",letterSpacing:"0.1em"}}>{lvlTitle(lvl).toUpperCase()}</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--gold)",letterSpacing:"0.1em"}}>{lvlTitle(lvl).toUpperCase()}</p>
         </div>
         <div style={{width:1,height:90,background:"var(--b)"}}/>
         {/* XP bar */}
         <div style={{flex:1,minWidth:180}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
-            <span style={{fontFamily:"var(--fm)",fontSize:12,color:"var(--txd)"}}>Seviye {lvl} → {lvl+1}</span>
-            <span style={{fontFamily:"var(--fm)",fontSize:12,color:"var(--gold)"}}>{xpInLvl} / 500 XP</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>Seviye {lvl} → {lvl+1}</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--gold)"}}>{xpInLvl} / 500 XP</span>
           </div>
           <div style={{height:5,background:"var(--s3)",borderRadius:3,overflow:"hidden",marginBottom:18}}>
             <div className="bgrow" style={{height:"100%",background:"var(--gold)",borderRadius:3,width:`${lvlPct}%`,boxShadow:"0 0 8px rgba(201,168,76,.3)",animationDelay:".3s"}}/>
           </div>
-          <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"var(--txm)",lineHeight:1.7}}>"Discipline is choosing between what you want now and what you want most."</p>
+          <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--txm)",lineHeight:1.7}}>"Discipline is choosing between what you want now and what you want most."</p>
         </div>
         <div style={{width:1,height:90,background:"var(--b)"}}/>
         {/* Stats */}
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {[{label:"Aktif Gün",val:totalDays,c:"var(--gold)"},{label:"Kusursuz",val:perfectDays,c:"var(--green)"},{label:"🔥 Seri",val:`${streak} gün`,c:"var(--violet)"}].map(s=>(
             <div key={s.label}>
-              <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:2}}>{s.label}</p>
+              <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:2}}>{s.label}</p>
               <p style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:600,color:s.c}}>{s.val}</p>
             </div>
           ))}
@@ -930,21 +1020,21 @@ function Progress({ xp, streak }) {
 
       {/* Calendar */}
       <div className="fu1" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"24px 28px",marginBottom:18}}>
-        <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>84 Günlük Aktivite</p>
+        <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>84 Günlük Aktivite</p>
         <StreakCalendar dayData={dayData}/>
       </div>
 
       {/* Bottom grid */}
-      <div className="r-grid2" style={{gap:18}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         {/* Habits breakdown */}
         <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px 24px"}}>
-          <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Alışkanlık Oranı (84 gün)</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Alışkanlık Oranı (84 gün)</p>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             {HABITS_STAT.map((h,i)=>(
               <div key={h.label} style={{animationDelay:`${i*.08}s`}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-                  <span style={{fontSize:15,color:"var(--txm)"}}>{h.label}</span>
-                  <span style={{fontFamily:"var(--fm)",fontSize:13,color:h.color}}>{h.pct}%</span>
+                  <span style={{fontSize:13,color:"var(--txm)"}}>{h.label}</span>
+                  <span style={{fontFamily:"var(--fm)",fontSize:11,color:h.color}}>{h.pct}%</span>
                 </div>
                 <div style={{height:3,background:"var(--s3)",borderRadius:2,overflow:"hidden"}}>
                   <div className="bgrow" style={{height:"100%",background:h.color,borderRadius:2,width:`${h.pct}%`,animationDelay:`${.3+i*.08}s`}}/>
@@ -955,7 +1045,7 @@ function Progress({ xp, streak }) {
         </div>
         {/* Milestones */}
         <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px 24px"}}>
-          <p style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Kilometre Taşları</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Kilometre Taşları</p>
           <div style={{position:"relative",marginBottom:20}}>
             <div style={{height:2,background:"var(--s3)",borderRadius:1}}/>
             <div className="bgrow" style={{position:"absolute",top:0,left:0,height:2,background:"var(--gold)",borderRadius:1,width:`${Math.min(xp/maxM*100,100)}%`,animationDelay:".4s"}}/>
@@ -966,10 +1056,10 @@ function Progress({ xp, streak }) {
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {MILESTONES.map(m=>(
               <div key={m.xp} style={{display:"flex",alignItems:"center",gap:10,opacity:m.done?1:.35,transition:"opacity .2s"}}>
-                <span style={{fontFamily:"var(--fm)",fontSize:15,color:m.done?"var(--gold)":"var(--txd)",width:14}}>{m.icon}</span>
-                <span style={{fontSize:15,flex:1,color:m.done?"var(--tx)":"var(--txm)"}}>{m.label}</span>
-                <span style={{fontFamily:"var(--fm)",fontSize:12,color:m.done?"var(--gold)":"var(--txd)"}}>{m.xp} XP</span>
-                {m.done&&<span style={{fontSize:12,color:"var(--green)"}}>✓</span>}
+                <span style={{fontFamily:"var(--fm)",fontSize:13,color:m.done?"var(--gold)":"var(--txd)",width:14}}>{m.icon}</span>
+                <span style={{fontSize:13,flex:1,color:m.done?"var(--tx)":"var(--txm)"}}>{m.label}</span>
+                <span style={{fontFamily:"var(--fm)",fontSize:10,color:m.done?"var(--gold)":"var(--txd)"}}>{m.xp} XP</span>
+                {m.done&&<span style={{fontSize:10,color:"var(--green)"}}>✓</span>}
               </div>
             ))}
           </div>
@@ -980,12 +1070,232 @@ function Progress({ xp, streak }) {
 }
 
 // ════════════════════════════════════════════════════════
+//  TAB 6 — LOGLAR
+// ════════════════════════════════════════════════════════
+const AP_LABELS = {
+  1:"Neyden kaçıyorum?", 2:"Son 2 saatimi filmlesen?",
+  3:"Nefret ettiğim hayata mı?", 4:"Kimlik koruma mı, arzu mu?",
+  5:"Canlılığı güvenliğe takas?", 6:"5 yıl sonra ne hisseder?",
+  7:"Neyi erteliyorum?", 8:"Onaysız ne yapardım?",
+};
+const HABIT_CLR = {
+  "Derin odak çalışması":"var(--gold)","Fiziksel antrenman":"var(--blue)",
+  "Stratejik okuma":"var(--green)","İçerik üretimi":"var(--amber)",
+};
+const scoreClr = (s) => s>=80?"var(--gold)":s>=55?"var(--blue)":s>=30?"var(--amber)":"var(--txd)";
+const scoreLbl = (s) => s===100?"Kusursuz":s>=80?"Güçlü":s>=55?"Orta":s>=30?"Zayıf":"Kayıp";
+const fmtShort = (iso) => new Date(iso).toLocaleDateString("tr-TR",{weekday:"short",day:"numeric",month:"short"});
+const fmtLong  = (iso) => new Date(iso).toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+function LogCard({ entry, habits, morning, expanded, onToggle }) {
+  const sc = scoreClr(entry.dayScore);
+  return (
+    <div style={{background:"var(--s1)",border:`1px solid ${expanded?"var(--bh)":"var(--b)"}`,borderRadius:14,overflow:"hidden",transition:"border-color .2s"}}>
+      {/* Row header */}
+      <div onClick={onToggle} style={{display:"flex",alignItems:"center",gap:14,padding:"13px 18px",cursor:"pointer"}}>
+        {/* Score ring */}
+        <div style={{width:42,height:42,borderRadius:"50%",flexShrink:0,border:`2px solid ${sc}`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:`${sc}08`}}>
+          <span style={{fontFamily:"var(--fd)",fontSize:14,fontWeight:600,color:sc,lineHeight:1}}>{entry.dayScore}</span>
+          <span style={{fontSize:7,color:sc,fontFamily:"var(--fm)",letterSpacing:"0.06em"}}>puan</span>
+        </div>
+        {/* Date + habit dots */}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
+            <span style={{fontFamily:"var(--fb)",fontSize:13,fontWeight:500,color:"var(--tx)"}}>{fmtShort(entry.date)}</span>
+            <span style={{fontSize:9,padding:"2px 7px",borderRadius:8,background:`${sc}10`,color:sc,fontFamily:"var(--fm)",letterSpacing:"0.08em"}}>{scoreLbl(entry.dayScore)}</span>
+            {entry.streak>0&&<span style={{fontSize:11,color:"var(--gold)",fontFamily:"var(--fm)"}}>🔥 {entry.streak}</span>}
+          </div>
+          <div style={{display:"flex",gap:5}}>
+            {habits.map(h=>(
+              <div key={h.id} title={h.text} style={{width:8,height:8,borderRadius:"50%",background:entry.habits?.includes(h.text)?(HABIT_CLR[h.text]||"var(--gold)"):"var(--s3)",border:`1px solid ${entry.habits?.includes(h.text)?"transparent":"var(--bh)"}`,transition:"background .2s"}}/>
+            ))}
+          </div>
+        </div>
+        {/* Stats */}
+        <div style={{display:"flex",gap:14,flexShrink:0}}>
+          {[{l:"Seans",v:entry.sessions,c:"var(--violet)"},{l:"+XP",v:`+${entry.xpGained}`,c:"var(--gold)"},{l:"Journal",v:entry.answeredQs?.length||0,c:"var(--rose)"}].map(s=>(
+            <div key={s.l} style={{textAlign:"center"}}>
+              <p style={{fontFamily:"var(--fm)",fontSize:13,color:s.c}}>{s.v}</p>
+              <p style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.08em"}}>{s.l}</p>
+            </div>
+          ))}
+          <span style={{fontSize:11,color:"var(--txd)",marginLeft:2}}>{expanded?"▲":"▼"}</span>
+        </div>
+      </div>
+      {/* Expanded */}
+      {expanded&&(
+        <div style={{borderTop:"1px solid var(--b)",padding:"16px 18px 18px",background:"var(--s2)",animation:"fu .2s ease"}}>
+          <p style={{fontSize:10,color:"var(--txd)",fontFamily:"var(--fm)",letterSpacing:"0.1em",marginBottom:14}}>{fmtLong(entry.date)}</p>
+          {/* Habits */}
+          <div style={{marginBottom:14}}>
+            <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Alışkanlıklar</p>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {habits.map(h=>{
+                const done = entry.habits?.includes(h.text);
+                const c = HABIT_CLR[h.text]||"var(--gold)";
+                return <span key={h.id} style={{fontSize:11,padding:"3px 9px",borderRadius:12,background:done?`${c}12`:"var(--s3)",border:`1px solid ${done?`${c}30`:"var(--b)"}`,color:done?c:"var(--txd)",fontFamily:"var(--fb)"}}>{done?"✓":"○"} {h.text}</span>;
+              })}
+            </div>
+          </div>
+          {/* Morning */}
+          <div style={{marginBottom:14}}>
+            <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Sabah Ritüeli</p>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              {morning.map(i=>{
+                const done = entry.morning?.includes(i.text);
+                return <span key={i.id} style={{fontSize:11,padding:"3px 9px",borderRadius:12,background:done?"var(--amber-s)":"var(--s3)",border:`1px solid ${done?"var(--amber-m)":"var(--b)"}`,color:done?"var(--amber)":"var(--txd)",fontFamily:"var(--fb)"}}>{done?"✓":"○"} {i.text}</span>;
+              })}
+            </div>
+          </div>
+          {/* Sessions */}
+          {entry.sessions>0&&(
+            <div style={{marginBottom:14}}>
+              <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Derin Odak</p>
+              <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                {Array.from({length:Math.min(entry.sessions,12)}).map((_,i)=>(
+                  <div key={i} style={{width:22,height:22,borderRadius:6,background:"var(--violet-s)",border:"1px solid rgba(124,92,191,.25)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <span style={{fontSize:9,color:"var(--violet)"}}>◉</span>
+                  </div>
+                ))}
+                <span style={{fontSize:12,color:"var(--txm)",fontFamily:"var(--fm)",marginLeft:4}}>{entry.sessions} seans</span>
+              </div>
+            </div>
+          )}
+          {/* Journal */}
+          {entry.answeredQs?.length>0&&(
+            <div style={{marginBottom:14}}>
+              <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Yanıtlanan Sorular</p>
+              <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                {entry.answeredQs.map(qId=>(
+                  <div key={qId} style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{width:16,height:16,borderRadius:4,background:"var(--rose-s)",border:"1px solid rgba(184,92,110,.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,color:"var(--rose)",flexShrink:0}}>{qId}</span>
+                    <span style={{fontSize:12,color:"var(--txm)",fontStyle:"italic"}}>{AP_LABELS[qId]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Score bar */}
+          <div style={{paddingTop:12,borderTop:"1px solid var(--b)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+              <span style={{fontSize:10,color:"var(--txd)",fontFamily:"var(--fm)"}}>Gün Skoru</span>
+              <span style={{fontSize:10,color:sc,fontFamily:"var(--fm)"}}>{entry.dayScore}/100</span>
+            </div>
+            <div style={{height:3,background:"var(--s3)",borderRadius:2,overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${entry.dayScore}%`,background:sc,borderRadius:2}}/>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LogSummary({ logs }) {
+  if(!logs.length) return null;
+  const avg     = Math.round(logs.reduce((s,e)=>s+e.dayScore,0)/logs.length);
+  const perfect = logs.filter(e=>e.dayScore===100).length;
+  const sessions= logs.reduce((s,e)=>s+(e.sessions||0),0);
+  const totalXp = logs.reduce((s,e)=>s+(e.xpGained||0),0);
+  const jDays   = logs.filter(e=>e.answeredQs?.length>0).length;
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:20}}>
+      {[
+        {label:"Ort. Skor",    val:avg,         color:scoreClr(avg),  sub:`${logs.length} günden`},
+        {label:"Kusursuz Gün", val:perfect,      color:"var(--gold)",  sub:"100 puan"},
+        {label:"Deep Work",    val:sessions,     color:"var(--violet)",sub:"toplam seans"},
+        {label:"Kazanılan XP", val:`+${totalXp}`,color:"var(--gold)", sub:"bu dönem"},
+        {label:"Journal Günü", val:jDays,        color:"var(--rose)",  sub:"soru yanıtlandı"},
+      ].map(s=>(
+        <div key={s.label} style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:12,padding:"14px 16px"}}>
+          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:5}}>{s.label}</p>
+          <p style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:600,color:s.color}}>{s.val}</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",marginTop:2}}>{s.sub}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ScoreTrend({ logs }) {
+  if(logs.length<3) return null;
+  const recent = [...logs].reverse().slice(-14);
+  const max = 100;
+  return (
+    <div style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:14,padding:"16px 20px",marginBottom:18}}>
+      <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:12}}>Son 14 Günün Skor Trendi</p>
+      <div style={{display:"flex",alignItems:"flex-end",gap:4,height:48}}>
+        {recent.map((e,i)=>{
+          const h = Math.max((e.dayScore/max)*48,3);
+          const c = scoreClr(e.dayScore);
+          return <div key={e.date} title={`${fmtShort(e.date)}: ${e.dayScore}`} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
+            <div style={{width:"100%",height:h,borderRadius:"3px 3px 0 0",background:c,opacity:.6+(i/recent.length)*.4,transition:"height .5s"}}/>
+          </div>;
+        })}
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
+        <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)"}}>{fmtShort(recent[0]?.date)}</span>
+        <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)"}}>{fmtShort(recent[recent.length-1]?.date)}</span>
+      </div>
+    </div>
+  );
+}
+
+function Logs({ habits=[], morning=[] }) {
+  const [logs, setLogs]       = useState([]);
+  const [expanded, setExpanded] = useState(null);
+  const [filter, setFilter]   = useState("all");
+  const [loaded, setLoaded]   = useState(false);
+
+  useEffect(()=>{
+    (async()=>{ const d=await store.get("theos_logs")||[]; setLogs(d); setLoaded(true); })();
+  },[]);
+
+  const filtered = logs.filter(e =>
+    filter==="perfect" ? e.dayScore===100 : filter==="good" ? e.dayScore>=70 : true
+  );
+
+  if(!loaded) return <div style={{textAlign:"center",padding:"60px 0",color:"var(--txd)",fontFamily:"var(--fm)",fontSize:12}}>Yükleniyor...</div>;
+
+  if(!logs.length) return (
+    <div style={{maxWidth:480,margin:"0 auto",textAlign:"center",padding:"64px 0"}}>
+      <p style={{fontFamily:"var(--fd)",fontSize:26,fontStyle:"italic",color:"var(--tx)",marginBottom:12}}>Henüz log yok</p>
+      <p style={{fontSize:13,color:"var(--txd)",lineHeight:1.8}}>Daily OS'ta günü tamamlayıp <strong style={{color:"var(--txm)"}}>Günü Kapat</strong> butonuna basınca ilk log otomatik kaydedilir.</p>
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="fu"><LogSummary logs={logs}/></div>
+      <div className="fu1"><ScoreTrend logs={logs}/></div>
+      <div className="fu1" style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+        <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)"}}>{filtered.length} kayıt</p>
+        <div style={{display:"flex",gap:6}}>
+          {[{k:"all",l:"Tümü"},{k:"good",l:"≥70 puan"},{k:"perfect",l:"Kusursuz"}].map(f=>(
+            <button key={f.k} onClick={()=>setFilter(f.k)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 12px",borderRadius:14,border:`1px solid ${filter===f.k?"var(--gold)":"var(--b)"}`,background:filter===f.k?"var(--gold-s)":"transparent",color:filter===f.k?"var(--gold)":"var(--txd)",cursor:"pointer",transition:"all .2s"}}>{f.l}</button>
+          ))}
+        </div>
+      </div>
+      <div className="fu2" style={{display:"flex",flexDirection:"column",gap:10}}>
+        {filtered.length===0
+          ? <p style={{textAlign:"center",padding:"28px 0",fontSize:13,color:"var(--txd)",fontStyle:"italic"}}>Bu filtreye uygun log bulunamadı.</p>
+          : filtered.map(e=>(
+            <LogCard key={e.date} entry={e} habits={habits} morning={morning}
+              expanded={expanded===e.date} onToggle={()=>setExpanded(p=>p===e.date?null:e.date)}/>
+          ))
+        }
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════
 //  IDENTITY BANNER (header'da her tab'da görünür)
 // ════════════════════════════════════════════════════════
 const IdentityBanner = ({ stmt }) => !stmt ? null : (
   <div style={{borderBottom:"1px solid var(--b)",padding:"8px 28px",background:"rgba(201,168,76,.02)",display:"flex",alignItems:"center",gap:10}}>
-    <span style={{fontSize:11,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase",flexShrink:0,fontFamily:"var(--fm)"}}>Ben</span>
-    <p style={{fontFamily:"var(--fd)",fontSize:16,fontStyle:"italic",color:"rgba(221,216,207,.55)",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{stmt}</p>
+    <span style={{fontSize:9,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase",flexShrink:0,fontFamily:"var(--fm)"}}>Ben</span>
+    <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"rgba(221,216,207,.55)",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{stmt}</p>
   </div>
 );
 
@@ -998,6 +1308,7 @@ const TABS = [
   {key:"northstar",label:"North Star",     icon:"◉"},
   {key:"journal",  label:"Mind Journal",   icon:"◇"},
   {key:"progress", label:"Progress",       icon:"◆"},
+  {key:"logs",     label:"Loglar",         icon:"◌"},
 ];
 
 export default function App() {
@@ -1009,6 +1320,7 @@ export default function App() {
   const [streak, setStreak]     = useState(0);
   const [xp, setXp]             = useState(0);
   const [level, setLevel]       = useState(1);
+  const [sessions, setSessions] = useState(0);
   const [loaded, setLoaded]     = useState(false);
   const [saved, setSaved]       = useState(true);
   const saveT                   = useRef(null);
@@ -1055,14 +1367,45 @@ export default function App() {
   const toggleHabit   = (id) => {
     const was = !!habitsDone[id];
     setHD(p=>({...p,[id]:!p[id]}));
-    setXp(x=>Math.max(0, was ? x-50 : x+50));
+    // XP sadece false→true geçişinde verilir, geri alımda düşmez
+    if(!was) setXp(x=>x+50);
   };
-  const handleEndDay = () => {
-    const allM = DEF_MORNING.every(i=>morningDone[i.id]);
-    const allH = DEF_HABITS.every(h=>habitsDone[h.id]);
-    if(allM&&allH){ setStreak(s=>s+1); setXp(x=>x+150); }
-    else if(allH||allM){ setXp(x=>x+50); }
-    setMD({}); setHD({});
+  const handleEndDay = async () => {
+    const today  = todayKey();
+    const allM   = DEF_MORNING.every(i=>morningDone[i.id]);
+    const allH   = DEF_HABITS.every(h=>habitsDone[h.id]);
+    const mScore = DEF_MORNING.length ? Math.round(DEF_MORNING.filter(i=>morningDone[i.id]).length/DEF_MORNING.length*100) : 0;
+    const hScore = DEF_HABITS.length  ? Math.round(DEF_HABITS.filter(h=>habitsDone[h.id]).length/DEF_HABITS.length*100)   : 0;
+    const dayScore = Math.round((mScore+hScore)/2);
+
+    let xpGained = 0;
+    let newStreak = streak;
+    if(allM&&allH){ xpGained=150; newStreak=streak+1; setStreak(newStreak); }
+    else if(allH||allM){ xpGained=50; }
+    xpGained += sessions*50;
+    if(xpGained>0) setXp(x=>x+xpGained);
+
+    // Journal cevapları
+    const journalData = await store.get(`theos_ap_${today}`) || {};
+    const answeredQs  = Object.keys(journalData).map(Number);
+
+    // Log entry kaydet
+    const entry = {
+      date:      today,
+      dayScore,
+      habits:    DEF_HABITS.filter(h=>habitsDone[h.id]).map(h=>h.text),
+      morning:   DEF_MORNING.filter(i=>morningDone[i.id]).map(i=>i.text),
+      sessions,
+      xpGained,
+      answeredQs,
+      streak:    newStreak,
+      timestamp: new Date().toISOString(),
+    };
+    const existing = await store.get("theos_logs") || [];
+    await store.set("theos_logs", [entry, ...existing.filter(e=>e.date!==today)].slice(0,90));
+
+    // Sıfırla
+    setMD({}); setHD({}); setSessions(0);
   };
 
   const activeTab = TABS.find(t=>t.key===tab);
@@ -1079,12 +1422,12 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{fontFamily:"var(--fd)",fontSize:20,fontWeight:600,color:"var(--tx)"}}>The OS</span>
               <div style={{width:1,height:13,background:"var(--bh)"}}/>
-              <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)",letterSpacing:"0.14em"}}>{activeTab?.label.toUpperCase()}</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.14em"}}>{activeTab?.label.toUpperCase()}</span>
             </div>
-            {/* Nav — desktop */}
-            <nav className="r-nav-desktop">
+            {/* Nav */}
+            <nav style={{display:"flex",gap:1}}>
               {TABS.map(t=>(
-                <button key={t.key} onClick={()=>setTab(t.key)} style={{fontFamily:"var(--fm)",fontSize:13,padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s",letterSpacing:"0.04em",display:"flex",alignItems:"center",gap:5,marginBottom:"-1px"}}>
+                <button key={t.key} onClick={()=>setTab(t.key)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s",letterSpacing:"0.04em",display:"flex",alignItems:"center",gap:5,marginBottom:"-1px"}}>
                   <span style={{opacity:.7}}>{t.icon}</span> {t.label}
                 </button>
               ))}
@@ -1092,10 +1435,10 @@ export default function App() {
             {/* Right side */}
             <div style={{display:"flex",alignItems:"center",gap:16}}>
               <SaveDot saved={saved}/>
-              <div className="r-xp" style={{alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 14px",borderRadius:16}}>
-                <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:17,fontWeight:600}}>{xp.toLocaleString()} XP</span>
+              <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 14px",borderRadius:16}}>
+                <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:15,fontWeight:600}}>{xp.toLocaleString()} XP</span>
                 <div style={{width:1,height:11,background:"var(--bh)"}}/>
-                <span style={{fontFamily:"var(--fm)",fontSize:13,color:"var(--txd)"}}>🔥 {streak}</span>
+                <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>🔥 {streak}</span>
               </div>
             </div>
           </div>
@@ -1104,23 +1447,14 @@ export default function App() {
         </header>
 
         {/* ── Content ── */}
-        <main className="r-main" style={{maxWidth:940,margin:"0 auto",padding:"32px 24px 80px"}}>
+        <main style={{maxWidth:940,margin:"0 auto",padding:"32px 24px 80px"}}>
           {tab==="identity" && <IdentityCore data={identity} onChange={setIdentity}/>}
           {tab==="northstar"&& <NorthStar data={northStar} onChange={setNS}/>}
-          {tab==="daily"    && <DailyOS morningItems={DEF_MORNING} morningDone={morningDone} onToggleMorning={toggleMorning} habits={DEF_HABITS} habitsDone={habitsDone} onToggleHabit={toggleHabit} streak={streak} onEndDay={handleEndDay} xp={xp} setXp={setXp}/>}
+          {tab==="daily"    && <DailyOS morningItems={DEF_MORNING} morningDone={morningDone} onToggleMorning={toggleMorning} habits={DEF_HABITS} habitsDone={habitsDone} onToggleHabit={toggleHabit} streak={streak} onEndDay={handleEndDay} xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions}/>}
           {tab==="journal"  && <MindJournal/>}
           {tab==="progress" && <Progress xp={xp} streak={streak}/>}
+          {tab==="logs"     && <Logs habits={DEF_HABITS} morning={DEF_MORNING}/>}
         </main>
-
-        {/* ── Mobile bottom nav ── */}
-        <nav className="r-nav-mobile">
-          {TABS.map(t=>(
-            <button key={t.key} onClick={()=>setTab(t.key)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"8px 4px",border:"none",cursor:"pointer",background:"transparent",color:tab===t.key?"var(--gold)":"var(--txd)",transition:"color .2s"}}>
-              <span style={{fontSize:18,lineHeight:1}}>{t.icon}</span>
-              <span style={{fontFamily:"var(--fm)",fontSize:11,letterSpacing:"0.06em"}}>{t.label}</span>
-            </button>
-          ))}
-        </nav>
       </div>
     </>
   );
