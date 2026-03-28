@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { store, supabase } from "./src/lib/supabase";
 
 /* ─────────────────────────── GLOBAL STYLES ─────────────────────────── */
 const G = () => (
@@ -62,17 +63,6 @@ const G = () => (
   `}</style>
 );
 
-/* ─────────────────────────── STORAGE ─────────────────────────── */
-const store = {
-  async get(k) {
-    try { const r = await window.storage?.get(k); if (r) return JSON.parse(r.value); } catch {}
-    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; }
-  },
-  async set(k, v) {
-    try { await window.storage?.set(k, JSON.stringify(v)); } catch {}
-    try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
-  }
-};
 
 /* ─────────────────────────── HELPERS ─────────────────────────── */
 const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -1435,6 +1425,18 @@ export default function App() {
             {/* Right side */}
             <div style={{display:"flex",alignItems:"center",gap:16}}>
               <SaveDot saved={saved}/>
+              <button
+                onClick={() => supabase.auth.signOut()}
+                style={{
+                  fontFamily:"var(--fm)", fontSize:11,
+                  padding:"5px 12px", borderRadius:8,
+                  border:"1px solid var(--b)", cursor:"pointer",
+                  background:"transparent", color:"var(--txd)",
+                  transition:"all .2s"
+                }}
+              >
+                Çıkış
+              </button>
               <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 14px",borderRadius:16}}>
                 <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:15,fontWeight:600}}>{xp.toLocaleString()} XP</span>
                 <div style={{width:1,height:11,background:"var(--bh)"}}/>
