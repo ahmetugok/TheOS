@@ -5,7 +5,8 @@
 // ═══════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { store, supabase } from "./src/lib/supabase";
+import { createPortal } from "react-dom";
+import { store } from "./src/lib/supabase";
 
 /* ─────────────────────────── GLOBAL STYLES ─────────────────────────── */
 const G = () => (
@@ -14,8 +15,8 @@ const G = () => (
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     :root{
       --bg:#080809;--s1:#0f0f11;--s2:#161618;--s3:#1c1c1f;
-      --b:rgba(255,255,255,0.055);--bh:rgba(255,255,255,0.10);
-      --tx:#ddd8cf;--txd:#4a4845;--txm:#8a8580;
+      --b:rgba(255,255,255,0.07);--bh:rgba(255,255,255,0.13);
+      --tx:#e8e3da;--txd:#706b65;--txm:#a09890;
       --gold:#c9a84c;--gold-s:rgba(201,168,76,0.07);--gold-m:rgba(201,168,76,0.16);
       --red:#b83232;--red-s:rgba(184,50,50,0.07);
       --blue:#3d8fd4;--blue-s:rgba(61,143,212,0.07);
@@ -30,8 +31,8 @@ const G = () => (
       --fm:'DM Mono',monospace;
       --nav:56px;
     }
-    body{background:var(--bg);color:var(--tx);font-family:var(--fb);}
-    input,textarea{font-family:var(--fb);background:transparent;border:none;outline:none;color:var(--tx);resize:none;}
+    body{background:var(--bg);color:var(--tx);font-family:var(--fb);-webkit-text-size-adjust:100%;}
+    input,textarea{font-family:var(--fb);background:transparent;border:none;outline:none;color:var(--tx);resize:none;font-size:15px;line-height:1.7;}
     input::placeholder,textarea::placeholder{color:var(--txd);}
     ::-webkit-scrollbar{width:3px;}
     ::-webkit-scrollbar-thumb{background:var(--bh);border-radius:2px;}
@@ -60,6 +61,42 @@ const G = () => (
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
       animation:shimmer 3s linear infinite;
     }
+
+    /* ── Mobile nav ── */
+    .mob-menu{display:none;}
+    .mob-overlay{display:none;}
+    @media(max-width:700px){
+      .desk-nav{display:none!important;}
+      .mob-menu{display:flex;}
+      .mob-overlay{display:block;position:fixed;inset:0;z-index:90;background:rgba(4,4,5,.7);backdrop-filter:blur(6px);}
+      .mob-nav-panel{
+        position:fixed;top:0;right:0;bottom:0;width:240px;z-index:91;
+        background:var(--s1);border-left:1px solid var(--bh);
+        display:flex;flex-direction:column;padding:16px 0;
+      }
+      /* Stack grids to single column on mobile */
+      .grid-2col{grid-template-columns:1fr!important;}
+      .daily-grid{grid-template-columns:1fr!important;}
+      .right-sticky{position:static!important;}
+      .progress-hero{flex-direction:column!important;gap:20px!important;}
+      .log-summary-grid{grid-template-columns:repeat(2,1fr)!important;}
+      .main-pad{padding:20px 14px 100px!important;}
+      .header-pad{padding:0 14px!important;}
+      /* Bottom tab bar on mobile */
+      .mob-tabbar{
+        display:flex!important;
+        position:fixed;bottom:0;left:0;right:0;z-index:80;
+        background:rgba(8,8,9,.97);border-top:1px solid var(--b);
+        backdrop-filter:blur(12px);
+        padding:6px 0 max(6px,env(safe-area-inset-bottom));
+      }
+    }
+    @media(min-width:701px){
+      .mob-tabbar{display:none!important;}
+    }
+    /* Timer circle — fluid size using CSS */
+    .timer-wrap-normal{width:min(180px,42vw);height:min(180px,42vw);}
+    .timer-wrap-focus{width:min(260px,72vw);height:min(260px,72vw);}
   `}</style>
 );
 
@@ -96,11 +133,11 @@ const Tag = ({ children, color = "gold" }) => {
     rose:  ["var(--rose-s)",  "var(--rose)",  "rgba(184,92,110,.18)"],
   };
   const [bg, fg, border] = map[color] || map.gold;
-  return <span style={{ display:"inline-flex", alignItems:"center", fontSize:9, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", background:bg, color:fg, border:`1px solid ${border}`, padding:"3px 8px", borderRadius:3 }}>{children}</span>;
+  return <span style={{ display:"inline-flex", alignItems:"center", fontSize:10, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", background:bg, color:fg, border:`1px solid ${border}`, padding:"3px 9px", borderRadius:3 }}>{children}</span>;
 };
 
-const FieldLabel = ({ children, color = "var(--txd)" }) => (
-  <p style={{ fontSize:9, fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", color, fontFamily:"var(--fm)", marginBottom:10 }}>{children}</p>
+const FieldLabel = ({ children, color = "var(--txm)" }) => (
+  <p style={{ fontSize:10, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", color, fontFamily:"var(--fm)", marginBottom:10 }}>{children}</p>
 );
 
 const Card = ({ children, accent, style = {} }) => {
@@ -360,7 +397,7 @@ function HabitTracker({ habits, done, onToggle }) {
         })}
       </div>
       <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid var(--b)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <span style={{fontSize:12,color:"var(--txd)"}}>Bugünkü skor</span>
+        <span style={{fontSize:12,color:"var(--txm)"}}>Bugünkü skor</span>
         <span style={{fontFamily:"var(--fm)",fontSize:20,color:completed===habits.length?"var(--gold)":"var(--txm)"}}>{completed}<span style={{fontSize:12,color:"var(--txd)"}}>/{habits.length}</span></span>
       </div>
     </div>
@@ -368,29 +405,29 @@ function HabitTracker({ habits, done, onToggle }) {
 }
 
 /* Deep Work Timer */
-function DeepWorkTimer({ onSession, xp, setXp }) {
+function DeepWorkTimer({ onSession, xp, setXp, sessions, setSessions }) {
   const [preset, setPreset]       = useState(PRESETS[0]);
   const [secs, setSecs]           = useState(PRESETS[0].sec);
   const [running, setRunning]     = useState(false);
   const [project, setProject]     = useState("");
-  const [sessions, setSessions]   = useState(0);
   const [focusMode, setFocusMode] = useState(false);
   const [toast, setToast]         = useState(null);
-  const iRef = useRef(null);
+  const iRef    = useRef(null);
   const totalRef = useRef(PRESETS[0].sec);
 
   const progress = 1 - secs / totalRef.current;
-  const SIZE = focusMode ? 260 : 180;
-  const R = (SIZE - 6) / 2;
+  const NORM_S = 200; const FOCUS_S = 300;
+  const SIZE = focusMode ? FOCUS_S : NORM_S;
+  const R = (SIZE - 8) / 2;
   const C = 2 * Math.PI * R;
   const offset = C * (1 - progress);
 
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null),2500); };
-
+  const enterFocus = () => { if(!running) start(); setFocusMode(true); };
   const start = () => setRunning(true);
   const pause = () => setRunning(false);
   const reset = () => { setRunning(false); setSecs(preset.sec); totalRef.current = preset.sec; };
-  const pick = (p) => { setRunning(false); setPreset(p); setSecs(p.sec); totalRef.current = p.sec; };
+  const pick  = (p) => { setRunning(false); setPreset(p); setSecs(p.sec); totalRef.current = p.sec; };
 
   useEffect(()=>{
     if(running){
@@ -416,54 +453,87 @@ function DeepWorkTimer({ onSession, xp, setXp }) {
   const mins = String(Math.floor(secs/60)).padStart(2,"0");
   const sec2 = String(secs%60).padStart(2,"0");
 
+  // Timer ring — tıklanınca focus moduna girer, viewBox ile zoom-safe
+  // Timer boyutlarını JS ile hesapla (CSS min() yerine — daha güvenilir)
+  const timerSizePx = focusMode
+    ? Math.min(300, Math.floor(window.innerWidth * 0.72))
+    : Math.min(200, Math.floor(window.innerWidth * 0.46));
+
   const timerCore = (
-    <div style={{position:"relative",width:SIZE,height:SIZE}}>
-      <svg width={SIZE} height={SIZE} style={{transform:"rotate(-90deg)"}}>
-        <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="var(--s3)" strokeWidth={focusMode?4:3}/>
+    <div
+      onClick={focusMode ? undefined : enterFocus}
+      title={focusMode ? undefined : "Odak moduna gir"}
+      style={{
+        position:"relative",
+        width:timerSizePx,
+        height:timerSizePx,
+        cursor: focusMode ? "default" : "pointer",
+        flexShrink:0,
+      }}
+    >
+      <svg width={timerSizePx} height={timerSizePx} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{transform:"rotate(-90deg)",display:"block"}}>
+        <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke="var(--s3)" strokeWidth={focusMode?5:3}/>
         <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none" stroke={running?"var(--gold)":"var(--bh)"}
-          strokeWidth={focusMode?4:3} strokeLinecap="round" strokeDasharray={C} strokeDashoffset={offset}
+          strokeWidth={focusMode?5:3} strokeLinecap="round" strokeDasharray={C} strokeDashoffset={offset}
           style={{transition:"stroke-dashoffset 1s linear,stroke .3s"}}/>
       </svg>
-      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-        <span style={{fontFamily:"var(--fm)",fontSize:focusMode?52:32,fontWeight:300,letterSpacing:"0.04em",color:running?"var(--tx)":"var(--txm)"}}>{mins}:{sec2}</span>
-        {!focusMode&&<span style={{fontSize:9,color:"var(--txd)",letterSpacing:"0.12em",textTransform:"uppercase",marginTop:2}}>{running?"odakta":"hazır"}</span>}
+      <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <span style={{fontFamily:"var(--fm)",fontSize:focusMode?`${Math.round(timerSizePx*0.2)}px`:`${Math.round(timerSizePx*0.17)}px`,fontWeight:300,letterSpacing:"0.04em",color:running?"var(--tx)":"var(--txm)"}}>{mins}:{sec2}</span>
+        <span style={{fontSize:focusMode?13:10,color:"var(--txd)",letterSpacing:"0.1em",textTransform:"uppercase",marginTop:3}}>
+          {focusMode ? (running?"odakta":"başlamak için bas") : (running?"odakta":"tıkla → odak")}
+        </span>
       </div>
     </div>
   );
 
-  if(focusMode) return (
-    <div style={{position:"fixed",inset:0,zIndex:200,background:"#030304",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fi .3s ease"}}>
-      {toast&&<div style={{position:"absolute",top:32,background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 20px",borderRadius:20,fontFamily:"var(--fm)",fontSize:12}}>{toast}</div>}
-      <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--txd)",letterSpacing:"0.08em",marginBottom:44}}>{project||"Derin Odak"}</p>
+  // ── FOCUS (tam ekran) modu ── Portal ile document.body'e render et
+  // (parent'ta transform olursa position:fixed bozulur — portal bunu çözer)
+  const focusOverlay = focusMode ? createPortal(
+    <div style={{
+      position:"fixed",top:0,left:0,
+      width:"100vw",height:"100vh",
+      zIndex:99999,
+      background:"#030304",
+      display:"flex",flexDirection:"column",
+      alignItems:"center",justifyContent:"center",
+      animation:"fi .3s ease",
+    }}>
+      {toast&&<div style={{position:"absolute",top:32,left:"50%",transform:"translateX(-50%)",background:"var(--s2)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 24px",borderRadius:20,fontFamily:"var(--fm)",fontSize:13,whiteSpace:"nowrap"}}>{toast}</div>}
+      <p style={{fontFamily:"var(--fd)",fontSize:18,fontStyle:"italic",color:"var(--txm)",letterSpacing:"0.06em",marginBottom:40,textAlign:"center",padding:"0 20px"}}>{project||"Derin Odak"}</p>
       {timerCore}
-      <div style={{marginTop:44,display:"flex",gap:14}}>
-        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:13,fontWeight:600,padding:"11px 32px",borderRadius:8,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304"}}>{running?"Duraklat":"Başlat"}</button>
-        <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:13,padding:"11px 22px",borderRadius:8,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
+      <div style={{marginTop:40,display:"flex",gap:16}}>
+        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:15,fontWeight:600,padding:"13px 44px",borderRadius:10,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304",letterSpacing:"0.02em"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
+        <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:15,padding:"13px 28px",borderRadius:10,border:"1px solid var(--bh)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
       </div>
-      {sessions>0&&<p style={{marginTop:28,fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>{sessions} seans tamamlandı</p>}
-    </div>
-  );
+      {sessions>0&&<p style={{marginTop:32,fontFamily:"var(--fm)",fontSize:12,color:"var(--txd)",letterSpacing:"0.08em"}}>{sessions} seans tamamlandı</p>}
+    </div>,
+    document.body
+  ) : null;
 
+  if(focusMode) return focusOverlay;
+
+  // ── Normal kart modu ──
   return (
     <div style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px"}}>
-      {toast&&<div style={{marginBottom:12,background:"var(--gold-s)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"7px 14px",borderRadius:8,fontFamily:"var(--fm)",fontSize:11,textAlign:"center"}}>{toast}</div>}
+      {toast&&<div style={{marginBottom:12,background:"var(--gold-s)",border:"1px solid var(--gold-m)",color:"var(--gold)",padding:"8px 14px",borderRadius:8,fontFamily:"var(--fm)",fontSize:12,textAlign:"center"}}>{toast}</div>}
       <SectionHead tag="Derin Odak" tagColor="violet"/>
-      <div style={{marginBottom:16,padding:"9px 12px",background:"var(--s2)",borderRadius:10,border:"1px solid var(--b)"}}>
-        <p style={{fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:5}}>Aktif Görev</p>
-        <input value={project} onChange={e=>setProject(e.target.value)} placeholder="Ne üzerinde çalışıyorsun?" style={{fontSize:13,width:"100%"}}/>
+      <div style={{marginBottom:16,padding:"10px 14px",background:"var(--s2)",borderRadius:10,border:"1px solid var(--b)"}}>
+        <p style={{fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txm)",fontFamily:"var(--fm)",marginBottom:6}}>Aktif Görev</p>
+        <input value={project} onChange={e=>setProject(e.target.value)} placeholder="Ne üzerinde çalışıyorsun?" style={{fontSize:14,width:"100%"}}/>
       </div>
-      <div style={{display:"flex",gap:8,marginBottom:20}}>
+      <div style={{display:"flex",gap:8,marginBottom:18}}>
         {PRESETS.map(p=>(
-          <button key={p.label} onClick={()=>pick(p)} style={{flex:1,padding:"7px 0",borderRadius:8,border:`1px solid ${preset.label===p.label?"var(--gold)":"var(--b)"}`,background:preset.label===p.label?"var(--gold-s)":"transparent",color:preset.label===p.label?"var(--gold)":"var(--txd)",fontSize:12,fontFamily:"var(--fm)",cursor:"pointer",transition:"all .2s"}}>{p.label}</button>
+          <button key={p.label} onClick={()=>pick(p)} style={{flex:1,padding:"8px 0",borderRadius:8,border:`1px solid ${preset.label===p.label?"var(--gold)":"var(--b)"}`,background:preset.label===p.label?"var(--gold-s)":"transparent",color:preset.label===p.label?"var(--gold)":"var(--txm)",fontSize:12,fontFamily:"var(--fm)",cursor:"pointer",transition:"all .2s"}}>{p.label}</button>
         ))}
       </div>
-      <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>{timerCore}</div>
+      {/* Timer ring — tıklayınca odak moduna girer */}
+      <div style={{display:"flex",justifyContent:"center",marginBottom:18}}>{timerCore}</div>
       <div style={{display:"flex",gap:10}}>
-        <button onClick={running?pause:start} style={{flex:2,padding:"11px",borderRadius:10,border:"none",cursor:"pointer",background:running?"var(--s3)":"var(--gold)",color:running?"var(--tx)":"#030304",fontSize:13,fontWeight:600,fontFamily:"var(--fb)",transition:"all .2s"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
-        <button onClick={reset} style={{flex:1,padding:"11px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:13,fontFamily:"var(--fb)"}}>↺</button>
-        <button onClick={()=>{if(!running)start();setFocusMode(true);}} title="Tam ekran" style={{padding:"11px 13px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txd)",fontSize:15}}>⛶</button>
+        <button onClick={running?pause:start} style={{flex:2,padding:"12px",borderRadius:10,border:"none",cursor:"pointer",background:running?"var(--s3)":"var(--gold)",color:running?"var(--tx)":"#030304",fontSize:14,fontWeight:600,fontFamily:"var(--fb)",transition:"all .2s"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
+        <button onClick={reset} title="Sıfırla" style={{flex:1,padding:"12px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)",fontSize:13,fontFamily:"var(--fb)"}}>↺</button>
+        <button onClick={enterFocus} title="Tam ekran odak" style={{padding:"12px 14px",borderRadius:10,border:"1px solid var(--b)",cursor:"pointer",background:"transparent",color:"var(--txm)",fontSize:15}}>⛶</button>
       </div>
-      {sessions>0&&<p style={{marginTop:12,textAlign:"center",fontFamily:"var(--fm)",fontSize:11,color:"var(--gold)"}}>◆ {sessions} seans · {sessions*Math.round(preset.sec/60)} dk odak</p>}
+      {sessions>0&&<p style={{marginTop:12,textAlign:"center",fontFamily:"var(--fm)",fontSize:12,color:"var(--gold)"}}>◆ {sessions} seans · {sessions*Math.round(preset.sec/60)} dk odak</p>}
     </div>
   );
 }
@@ -517,10 +587,8 @@ function EndDayModal({ onClose, onConfirm }) {
   );
 }
 
-function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDone, onToggleHabit, streak, onEndDay, xp, setXp }) {
-  const [sessions, setSessions]   = useState(0);
-  const [showEnd, setShowEnd]     = useState(false);
-  const [focusText, setFocusText] = useState("");
+function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDone, onToggleHabit, streak, onEndDay, xp, setXp, sessions, setSessions, focusText, setFocusText }) {
+  const [showEnd, setShowEnd] = useState(false);
 
   const handleEndDay = () => {
     onEndDay();
@@ -534,22 +602,22 @@ function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDon
       <div className="fu" style={{marginBottom:20}}>
         <DayScore morning={morningItems} mDone={morningDone} habits={habits} hDone={habitsDone} streak={streak} sessions={sessions}/>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,alignItems:"start"}}>
+      <div className="daily-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,alignItems:"start"}}>
         <div style={{display:"flex",flexDirection:"column",gap:18}}>
           <div className="fu1"><MorningStack items={morningItems} done={morningDone} onToggle={onToggleMorning}/></div>
           <div className="fu2"><HabitTracker habits={habits} done={habitsDone} onToggle={onToggleHabit}/></div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:18,position:"sticky",top:74}}>
+        <div className="right-sticky" style={{display:"flex",flexDirection:"column",gap:18,position:"sticky",top:74}}>
           <div className="fu1">
-            <DeepWorkTimer onSession={()=>setSessions(s=>s+1)} xp={xp} setXp={setXp}/>
+            <DeepWorkTimer onSession={()=>setSessions(s=>s+1)} xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions} project={focusText} setProject={setFocusText}/>
           </div>
           <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"20px 22px"}}>
-            <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:10}}>Bugünün Tek Odağı</p>
+            <p style={{fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--txm)",fontFamily:"var(--fm)",marginBottom:10}}>Bugünün Tek Odağı</p>
             <textarea value={focusText} onChange={e=>setFocusText(e.target.value)}
               placeholder="Bugün tek şeyi yapabilseydin ne olurdu?" rows={3}
-              style={{width:"100%",fontSize:14,lineHeight:1.75,fontFamily:"var(--fd)",fontStyle:"italic"}}/>
+              style={{width:"100%",fontSize:15,lineHeight:1.8,fontFamily:"var(--fd)",fontStyle:"italic"}}/>
           </div>
-          <button onClick={()=>setShowEnd(true)} style={{width:"100%",padding:"12px",borderRadius:12,border:"1px solid var(--bh)",cursor:"pointer",background:"var(--s2)",color:"var(--txm)",fontSize:13,fontFamily:"var(--fb)",fontWeight:500,transition:"all .2s"}}>
+          <button onClick={()=>setShowEnd(true)} style={{width:"100%",padding:"13px",borderRadius:12,border:"1px solid var(--bh)",cursor:"pointer",background:"var(--s2)",color:"var(--txm)",fontSize:14,fontFamily:"var(--fb)",fontWeight:500,transition:"all .2s"}}>
             Günü Kapat & Senkronize Et ↓
           </button>
         </div>
@@ -1311,8 +1379,10 @@ export default function App() {
   const [xp, setXp]             = useState(0);
   const [level, setLevel]       = useState(1);
   const [sessions, setSessions] = useState(0);
+  const [focusText, setFocusText] = useState("");
   const [loaded, setLoaded]     = useState(false);
   const [saved, setSaved]       = useState(true);
+  const [mobOpen, setMobOpen]   = useState(false);
   const saveT                   = useRef(null);
 
   /* ── Load ── */
@@ -1405,43 +1475,57 @@ export default function App() {
       <G/>
       <div style={{minHeight:"100vh",background:"var(--bg)"}}>
 
+        {/* ── Mobile overlay & panel ── */}
+        {mobOpen && (
+          <>
+            <div className="mob-overlay" onClick={()=>setMobOpen(false)}/>
+            <div className="mob-nav-panel">
+              <div style={{padding:"0 16px 12px",borderBottom:"1px solid var(--b)",marginBottom:8}}>
+                <span style={{fontFamily:"var(--fd)",fontSize:18,fontWeight:600,color:"var(--tx)"}}>The OS</span>
+              </div>
+              {TABS.map(t=>(
+                <button key={t.key} onClick={()=>{setTab(t.key);setMobOpen(false);}}
+                  style={{fontFamily:"var(--fm)",fontSize:13,padding:"12px 20px",border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txm)",textAlign:"left",display:"flex",alignItems:"center",gap:10,borderLeft:`3px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s"}}>
+                  <span>{t.icon}</span> {t.label}
+                </button>
+              ))}
+              <div style={{marginTop:"auto",padding:"12px 16px",borderTop:"1px solid var(--b)"}}>
+                <div style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)",textAlign:"center"}}>The OS</div>
+              </div>
+            </div>
+          </>
+        )}
+
         {/* ── Header ── */}
         <header style={{borderBottom:"1px solid var(--b)",position:"sticky",top:0,zIndex:50,background:"rgba(8,8,9,.94)",backdropFilter:"blur(14px)"}}>
-          <div style={{maxWidth:940,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:"var(--nav)"}}>
+          <div className="header-pad" style={{maxWidth:940,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:"var(--nav)"}}>
             {/* Logo */}
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{fontFamily:"var(--fd)",fontSize:20,fontWeight:600,color:"var(--tx)"}}>The OS</span>
               <div style={{width:1,height:13,background:"var(--bh)"}}/>
-              <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.14em"}}>{activeTab?.label.toUpperCase()}</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txm)",letterSpacing:"0.1em"}}>{ activeTab?.label.toUpperCase()}</span>
             </div>
-            {/* Nav */}
-            <nav style={{display:"flex",gap:1}}>
+            {/* Desktop Nav */}
+            <nav className="desk-nav" style={{display:"flex",gap:1}}>
               {TABS.map(t=>(
-                <button key={t.key} onClick={()=>setTab(t.key)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txd)",borderBottom:`2px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s",letterSpacing:"0.04em",display:"flex",alignItems:"center",gap:5,marginBottom:"-1px"}}>
+                <button key={t.key} onClick={()=>setTab(t.key)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"6px 14px",borderRadius:6,border:"none",cursor:"pointer",background:tab===t.key?"var(--s2)":"transparent",color:tab===t.key?"var(--tx)":"var(--txm)",borderBottom:`2px solid ${tab===t.key?"var(--gold)":"transparent"}`,transition:"all .2s",letterSpacing:"0.04em",display:"flex",alignItems:"center",gap:5,marginBottom:"-1px"}}>
                   <span style={{opacity:.7}}>{t.icon}</span> {t.label}
                 </button>
               ))}
             </nav>
             {/* Right side */}
-            <div style={{display:"flex",alignItems:"center",gap:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
               <SaveDot saved={saved}/>
-              <button
-                onClick={() => supabase.auth.signOut()}
-                style={{
-                  fontFamily:"var(--fm)", fontSize:11,
-                  padding:"5px 12px", borderRadius:8,
-                  border:"1px solid var(--b)", cursor:"pointer",
-                  background:"transparent", color:"var(--txd)",
-                  transition:"all .2s"
-                }}
-              >
-                Çıkış
-              </button>
-              <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 14px",borderRadius:16}}>
-                <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:15,fontWeight:600}}>{xp.toLocaleString()} XP</span>
+              <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 12px",borderRadius:14}}>
+                <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:14,fontWeight:600}}>{xp.toLocaleString()} XP</span>
                 <div style={{width:1,height:11,background:"var(--bh)"}}/>
-                <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)"}}>🔥 {streak}</span>
+                <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txm)"}}>🔥 {streak}</span>
               </div>
+              {/* Hamburger — mobile only */}
+              <button className="mob-menu" onClick={()=>setMobOpen(o=>!o)}
+                style={{width:36,height:36,borderRadius:8,border:"1px solid var(--b)",background:"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4}}>
+                {[0,1,2].map(i=><div key={i} style={{width:16,height:1.5,background:"var(--txm)",borderRadius:1}}/>)}
+              </button>
             </div>
           </div>
           {/* Identity banner */}
@@ -1449,14 +1533,25 @@ export default function App() {
         </header>
 
         {/* ── Content ── */}
-        <main style={{maxWidth:940,margin:"0 auto",padding:"32px 24px 80px"}}>
-          {tab==="identity" && <IdentityCore data={identity} onChange={setIdentity}/>}
-          {tab==="northstar"&& <NorthStar data={northStar} onChange={setNS}/>}
-          {tab==="daily"    && <DailyOS morningItems={DEF_MORNING} morningDone={morningDone} onToggleMorning={toggleMorning} habits={DEF_HABITS} habitsDone={habitsDone} onToggleHabit={toggleHabit} streak={streak} onEndDay={handleEndDay} xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions}/>}
-          {tab==="journal"  && <MindJournal/>}
-          {tab==="progress" && <Progress xp={xp} streak={streak}/>}
-          {tab==="logs"     && <Logs habits={DEF_HABITS} morning={DEF_MORNING}/>}
+        <main className="main-pad" style={{maxWidth:940,margin:"0 auto",padding:"32px 24px 80px"}}>
+          {tab==="identity"  && <IdentityCore data={identity} onChange={setIdentity}/>}
+          {tab==="northstar" && <NorthStar data={northStar} onChange={setNS}/>}
+          {tab==="daily"     && <DailyOS morningItems={DEF_MORNING} morningDone={morningDone} onToggleMorning={toggleMorning} habits={DEF_HABITS} habitsDone={habitsDone} onToggleHabit={toggleHabit} streak={streak} onEndDay={handleEndDay} xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions} focusText={focusText} setFocusText={setFocusText}/>}
+          {tab==="journal"   && <MindJournal/>}
+          {tab==="progress"  && <Progress xp={xp} streak={streak}/>}
+          {tab==="logs"      && <Logs habits={DEF_HABITS} morning={DEF_MORNING}/>}
         </main>
+
+        {/* ── Mobile bottom tab bar ── */}
+        <nav className="mob-tabbar" style={{display:"none"}}>
+          {TABS.map(t=>(
+            <button key={t.key} onClick={()=>setTab(t.key)}
+              style={{flex:1,padding:"6px 2px 2px",border:"none",background:"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,color:tab===t.key?"var(--gold)":"var(--txd)",transition:"color .2s"}}>
+              <span style={{fontSize:16}}>{t.icon}</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.05em"}}>{t.label}</span>
+            </button>
+          ))}
+        </nav>
       </div>
     </>
   );
