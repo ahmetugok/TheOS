@@ -12,7 +12,7 @@ const S = {
     padding: '10px 16px', borderRadius: '8px',
     border: '1px solid rgba(255,255,255,0.15)',
     background: 'rgba(255,255,255,0.06)', color: '#e8e3da',
-    fontSize: '15px', width: '280px', outline: 'none', boxSizing: 'border-box',
+    fontSize: '16px', width: '280px', outline: 'none', boxSizing: 'border-box',
   },
   btn: {
     padding: '10px 0', borderRadius: '8px', border: 'none',

@@ -54,7 +54,7 @@ const G = () => (
       --nav-bg:rgba(245,242,236,.94);--overlay-bg:rgba(200,195,185,.7);
     }
     body{background:var(--bg);color:var(--tx);font-family:var(--fb);-webkit-text-size-adjust:100%;}
-    input,textarea{font-family:var(--fb);background:transparent;border:none;outline:none;color:var(--tx);resize:none;font-size:15px;line-height:1.7;}
+    input,textarea{font-family:var(--fb);background:transparent;border:none;outline:none;color:var(--tx);resize:none;font-size:16px;line-height:1.7;}
     input::placeholder,textarea::placeholder{color:var(--txd);}
     ::-webkit-scrollbar{width:3px;}
     ::-webkit-scrollbar-thumb{background:var(--bh);border-radius:2px;}
