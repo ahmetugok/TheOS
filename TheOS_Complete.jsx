@@ -30,6 +30,9 @@ const G = () => (
       --fb:'DM Sans',sans-serif;
       --fm:'DM Mono',monospace;
       --nav:56px;
+      --zinc-900:#0f0f11;--zinc-800:#161618;--zinc-700:rgba(255,255,255,0.10);
+      --zinc-600:#706b65;--zinc-500:#8a857f;--zinc-400:#a09890;
+      --zinc-300:#bab4ac;--zinc-200:#e8e3da;
     }
     body{background:var(--bg);color:var(--tx);font-family:var(--fb);-webkit-text-size-adjust:100%;}
     input,textarea{font-family:var(--fb);background:transparent;border:none;outline:none;color:var(--tx);resize:none;font-size:15px;line-height:1.7;}
@@ -1360,6 +1363,25 @@ const IdentityBanner = ({ stmt }) => !stmt ? null : (
 // ════════════════════════════════════════════════════════
 //  MAIN APP
 // ════════════════════════════════════════════════════════
+const OLAY_TIPLERI = [
+  { id: 'duygusal', label: 'Duygusal Tepki', icon: '⚡' },
+  { id: 'hedef', label: 'Hedef Sapması', icon: '🎯' },
+  { id: 'karar', label: 'Karar Anı', icon: '⚖️' },
+  { id: 'davranis', label: 'Davranış Kalıbı', icon: '🔄' },
+];
+
+const CARPITMALAR = [
+  'Felaketleştirme',
+  'Siyah-beyaz düşünce',
+  'Zihin okuma',
+  'Aşırı genelleme',
+  'Duygusal muhakeme',
+  '"Yapmalıyım" tuzağı',
+  'Kişiselleştirme',
+  'Küçümseme',
+  'Filtreleme',
+];
+
 const TABS = [
   {key:"daily",    label:"Daily OS",       icon:"◎"},
   {key:"identity", label:"Identity",       icon:"◈"},
@@ -1367,6 +1389,7 @@ const TABS = [
   {key:"journal",  label:"Mind Journal",   icon:"◇"},
   {key:"progress", label:"Progress",       icon:"◆"},
   {key:"logs",     label:"Loglar",         icon:"◌"},
+  {key:"metac",    label:"Metacognition",  icon:"◑"},
 ];
 
 export default function App() {
@@ -1383,21 +1406,37 @@ export default function App() {
   const [loaded, setLoaded]     = useState(false);
   const [saved, setSaved]       = useState(true);
   const [mobOpen, setMobOpen]   = useState(false);
+  const [metacEvents, setMetacEvents] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('metac_events') || '[]'); } catch { return []; }
+  });
+  const [checkIns, setCheckIns] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('checkins') || '[]'); } catch { return []; }
+  });
+  const [metacView, setMetacView] = useState('kayit');
+  const [eventForm, setEventForm] = useState({
+    type: '', olay: '', dusunce: '', carpitmalar: [], cerceve: '', yogunluk: 3
+  });
+  const [checkinForm, setCheckinForm] = useState({ his: '', engel: '', adim: '' });
+  const [showEventSuccess, setShowEventSuccess] = useState(false);
   const saveT                   = useRef(null);
 
   /* ── Load ── */
   useEffect(()=>{
     (async()=>{
-      const id = await store.get("theos_identity");
-      const ns = await store.get("theos_northstar");
-      const td = await store.get(`theos_daily_${todayKey()}`);
-      const st = await store.get("theos_streak");
-      const xpv= await store.get("theos_xp");
+      const id  = await store.get("theos_identity");
+      const ns  = await store.get("theos_northstar");
+      const td  = await store.get(`theos_daily_${todayKey()}`);
+      const st  = await store.get("theos_streak");
+      const xpv = await store.get("theos_xp");
+      const me  = await store.get("metac_events");
+      const ci  = await store.get("checkins");
       if(id) setIdentity(id);
       if(ns) setNS(ns);
       if(td){ setMD(td.morningDone||{}); setHD(td.habitsDone||{}); }
       if(st) setStreak(st);
       if(xpv!=null){ setXp(xpv); setLevel(levelFromXp(xpv)); }
+      if(Array.isArray(me)) setMetacEvents(me);
+      if(Array.isArray(ci)) setCheckIns(ci);
       setLoaded(true);
     })();
   },[]);
@@ -1466,6 +1505,49 @@ export default function App() {
 
     // Sıfırla
     setMD({}); setHD({}); setSessions(0);
+  };
+
+  const saveMetacEvent = () => {
+    if (!eventForm.type || !eventForm.olay || !eventForm.dusunce) return;
+    const newEvent = { id: Date.now(), date: new Date().toISOString(), ...eventForm };
+    const updated = [newEvent, ...metacEvents];
+    setMetacEvents(updated);
+    store.set('metac_events', updated);
+    setEventForm({ type: '', olay: '', dusunce: '', carpitmalar: [], cerceve: '', yogunluk: 3 });
+    setShowEventSuccess(true);
+    setTimeout(() => setShowEventSuccess(false), 2500);
+  };
+
+  const saveCheckIn = () => {
+    if (!checkinForm.his) return;
+    const newCI = { id: Date.now(), date: new Date().toISOString(), ...checkinForm };
+    const updated = [newCI, ...checkIns];
+    setCheckIns(updated);
+    store.set('checkins', updated);
+    setCheckinForm({ his: '', engel: '', adim: '' });
+  };
+
+  const getCarpitmaStats = () => {
+    const counts = {};
+    metacEvents.forEach(e => e.carpitmalar?.forEach(c => { counts[c] = (counts[c] || 0) + 1; }));
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  };
+
+  const getOlayTipStats = () => {
+    const counts = { duygusal: 0, hedef: 0, karar: 0, davranis: 0 };
+    metacEvents.forEach(e => { if (counts[e.type] !== undefined) counts[e.type]++; });
+    return counts;
+  };
+
+  const getLast7DaysCheckIns = () => {
+    const now = new Date();
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(now);
+      d.setDate(now.getDate() - (6 - i));
+      const dateStr = d.toISOString().split('T')[0];
+      const ci = checkIns.find(c => c.date.startsWith(dateStr));
+      return { date: dateStr, label: d.toLocaleDateString('tr-TR', { weekday: 'short' }), ci };
+    });
   };
 
   const activeTab = TABS.find(t=>t.key===tab);
@@ -1540,6 +1622,310 @@ export default function App() {
           {tab==="journal"   && <MindJournal/>}
           {tab==="progress"  && <Progress xp={xp} streak={streak}/>}
           {tab==="logs"      && <Logs habits={DEF_HABITS} morning={DEF_MORNING}/>}
+          {tab==="metac" && (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div>
+      <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.8rem', color: 'var(--gold)', marginBottom: '0.25rem' }}>
+        Metacognition
+      </h2>
+      <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', color: 'var(--zinc-400)' }}>
+        Düşünceni gözlemle. Kalıpları gör. Yeniden çerçevele.
+      </p>
+    </div>
+
+    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      {[
+        { id: 'kayit', label: 'Olay Kaydı' },
+        { id: 'checkin', label: 'Check-in' },
+        { id: 'oruntu', label: 'Örüntüler' },
+        { id: 'review', label: 'Haftalık Review' },
+      ].map(v => (
+        <button key={v.id} onClick={() => setMetacView(v.id)} style={{
+          padding: '0.4rem 1rem',
+          borderRadius: '999px',
+          border: metacView === v.id ? '1px solid var(--gold)' : '1px solid var(--zinc-700)',
+          background: metacView === v.id ? 'var(--gold)' : 'transparent',
+          color: metacView === v.id ? 'var(--zinc-900)' : 'var(--zinc-300)',
+          fontFamily: 'DM Sans, sans-serif',
+          fontSize: '0.8rem',
+          cursor: 'pointer',
+          fontWeight: metacView === v.id ? 700 : 400,
+        }}>{v.label}</button>
+      ))}
+    </div>
+
+    {metacView === 'kayit' && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-700)', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: 'var(--zinc-200)', marginBottom: 0 }}>Yeni Olay Kaydı</p>
+
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {OLAY_TIPLERI.map(t => (
+              <button key={t.id} onClick={() => setEventForm(f => ({ ...f, type: t.id }))} style={{
+                padding: '0.35rem 0.8rem',
+                borderRadius: '8px',
+                border: eventForm.type === t.id ? '1px solid var(--gold)' : '1px solid var(--zinc-700)',
+                background: eventForm.type === t.id ? 'rgba(212,175,55,0.15)' : 'transparent',
+                color: eventForm.type === t.id ? 'var(--gold)' : 'var(--zinc-400)',
+                fontFamily: 'DM Sans, sans-serif',
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+              }}>{t.icon} {t.label}</button>
+            ))}
+          </div>
+
+          <div>
+            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>Ne oldu?</label>
+            <textarea value={eventForm.olay} onChange={e => setEventForm(f => ({ ...f, olay: e.target.value }))}
+              placeholder="Durumu kısaca anlat..." rows={2}
+              style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
+          </div>
+
+          <div>
+            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>İlk düşüncem / tepkim ne oldu?</label>
+            <textarea value={eventForm.dusunce} onChange={e => setEventForm(f => ({ ...f, dusunce: e.target.value }))}
+              placeholder="Aklından geçenleri yaz..." rows={2}
+              style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
+          </div>
+
+          <div>
+            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.5rem' }}>Bilişsel çarpıtma var mı? (varsa işaretle)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+              {CARPITMALAR.map(c => {
+                const selected = eventForm.carpitmalar.includes(c);
+                return (
+                  <button key={c} onClick={() => setEventForm(f => ({
+                    ...f,
+                    carpitmalar: selected ? f.carpitmalar.filter(x => x !== c) : [...f.carpitmalar, c]
+                  }))} style={{
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: '999px',
+                    border: selected ? '1px solid #e05252' : '1px solid var(--zinc-700)',
+                    background: selected ? 'rgba(224,82,82,0.15)' : 'transparent',
+                    color: selected ? '#e05252' : 'var(--zinc-500)',
+                    fontFamily: 'DM Sans, sans-serif',
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                  }}>{c}</button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>
+              Duygusal yoğunluk: <span style={{ color: 'var(--gold)', fontFamily: 'DM Mono, monospace' }}>{eventForm.yogunluk}/5</span>
+            </label>
+            <input type="range" min={1} max={5} value={eventForm.yogunluk}
+              onChange={e => setEventForm(f => ({ ...f, yogunluk: Number(e.target.value) }))}
+              style={{ width: '100%', accentColor: 'var(--gold)' }} />
+          </div>
+
+          <div>
+            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>Daha gerçekçi / dengeli bir bakış ne olurdu?</label>
+            <textarea value={eventForm.cerceve} onChange={e => setEventForm(f => ({ ...f, cerceve: e.target.value }))}
+              placeholder="Alternatif perspektif..." rows={2}
+              style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
+          </div>
+
+          <button onClick={saveMetacEvent} style={{
+            padding: '0.65rem 1.5rem', background: 'var(--gold)', border: 'none', borderRadius: '8px',
+            color: 'var(--zinc-900)', fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
+            fontSize: '0.85rem', cursor: 'pointer', alignSelf: 'flex-start',
+          }}>Kaydet</button>
+
+          {showEventSuccess && (
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: '#4ade80' }}>✓ Olay kaydedildi.</p>
+          )}
+        </div>
+
+        {metacEvents.length > 0 && (
+          <div>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', marginBottom: '0.8rem' }}>Son olaylar</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {metacEvents.slice(0, 5).map(ev => {
+                const tip = OLAY_TIPLERI.find(t => t.id === ev.type);
+                return (
+                  <div key={ev.id} style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--gold)' }}>{tip?.icon} {tip?.label}</span>
+                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--zinc-600)' }}>
+                        {new Date(ev.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: 'var(--zinc-300)', margin: '0 0 0.3rem' }}>{ev.olay}</p>
+                    {ev.carpitmalar?.length > 0 && (
+                      <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
+                        {ev.carpitmalar.map(c => (
+                          <span key={c} style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: 'rgba(224,82,82,0.1)', border: '1px solid rgba(224,82,82,0.3)', color: '#e05252', fontFamily: 'DM Sans, sans-serif', fontSize: '0.68rem' }}>{c}</span>
+                        ))}
+                      </div>
+                    )}
+                    {ev.cerceve && (
+                      <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#4ade80', marginTop: '0.5rem', borderLeft: '2px solid #4ade80', paddingLeft: '0.5rem' }}>
+                        {ev.cerceve}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+
+    {metacView === 'checkin' && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {getLast7DaysCheckIns().map(d => (
+            <div key={d.date} style={{ flex: 1, textAlign: 'center' }}>
+              <div style={{
+                width: '100%', aspectRatio: '1', borderRadius: '8px',
+                background: d.ci ? 'rgba(212,175,55,0.25)' : 'var(--zinc-800)',
+                border: d.ci ? '1px solid var(--gold)' : '1px solid var(--zinc-700)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1rem', marginBottom: '0.25rem',
+              }}>{d.ci ? '✓' : '·'}</div>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--zinc-500)' }}>{d.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-700)', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: 'var(--zinc-200)', marginBottom: 0 }}>
+            {new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} Check-in
+          </p>
+
+          {[
+            { key: 'his', label: 'Şu an nasıl hissediyorsun?', placeholder: 'Düşünce, his, enerji seviyesi...' },
+            { key: 'engel', label: 'Seni durduran bir şey var mı?', placeholder: 'Bir korku, şüphe, erteleme...' },
+            { key: 'adim', label: 'Bir sonraki küçük adım ne?', placeholder: 'Somut, yapılabilir bir şey...' },
+          ].map(q => (
+            <div key={q.key}>
+              <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>{q.label}</label>
+              <textarea value={checkinForm[q.key]} onChange={e => setCheckinForm(f => ({ ...f, [q.key]: e.target.value }))}
+                placeholder={q.placeholder} rows={2}
+                style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
+            </div>
+          ))}
+
+          <button onClick={saveCheckIn} style={{
+            padding: '0.65rem 1.5rem', background: 'var(--gold)', border: 'none', borderRadius: '8px',
+            color: 'var(--zinc-900)', fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
+            fontSize: '0.85rem', cursor: 'pointer', alignSelf: 'flex-start',
+          }}>Check-in Yap</button>
+        </div>
+
+        {checkIns.slice(0, 3).map(ci => (
+          <div key={ci.id} style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '10px', padding: '1rem' }}>
+            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--zinc-600)', marginBottom: '0.5rem' }}>
+              {new Date(ci.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            </p>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: 'var(--zinc-300)', margin: '0 0 0.25rem' }}>💭 {ci.his}</p>
+            {ci.engel && <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: 'var(--zinc-500)', margin: '0 0 0.25rem' }}>🧱 {ci.engel}</p>}
+            {ci.adim && <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#4ade80', margin: 0 }}>→ {ci.adim}</p>}
+          </div>
+        ))}
+      </div>
+    )}
+
+    {metacView === 'oruntu' && (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {metacEvents.length === 0 ? (
+          <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', color: 'var(--zinc-500)', textAlign: 'center', padding: '3rem 0' }}>
+            Henüz kaydedilen olay yok. Olay Kaydı bölümünden başla.
+          </p>
+        ) : (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+              {[
+                { label: 'Toplam Olay', value: metacEvents.length },
+                { label: 'Check-in', value: checkIns.length },
+                { label: 'En çok çarpıtma', value: getCarpitmaStats()[0]?.[0]?.split(' ')[0] || '—' },
+                { label: 'Ort. Yoğunluk', value: metacEvents.length ? (metacEvents.reduce((a, e) => a + (e.yogunluk || 3), 0) / metacEvents.length).toFixed(1) : '—' },
+              ].map(s => (
+                <div key={s.label} style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '10px', padding: '1rem', textAlign: 'center' }}>
+                  <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '1.4rem', color: 'var(--gold)', margin: '0 0 0.2rem' }}>{s.value}</p>
+                  <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.72rem', color: 'var(--zinc-500)', margin: 0 }}>{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '12px', padding: '1.2rem' }}>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', marginBottom: '1rem' }}>Olay tipi dağılımı</p>
+              {OLAY_TIPLERI.map(t => {
+                const count = getOlayTipStats()[t.id] || 0;
+                const max = Math.max(...Object.values(getOlayTipStats()), 1);
+                return (
+                  <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
+                    <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-400)', width: '110px', flexShrink: 0 }}>{t.icon} {t.label}</span>
+                    <div style={{ flex: 1, height: '6px', background: 'var(--zinc-800)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${(count / max) * 100}%`, background: 'var(--gold)', borderRadius: '3px', transition: 'width 0.4s' }} />
+                    </div>
+                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--zinc-500)', width: '20px', textAlign: 'right' }}>{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {getCarpitmaStats().length > 0 && (
+              <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '12px', padding: '1.2rem' }}>
+                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', marginBottom: '1rem' }}>En sık görülen bilişsel çarpıtmalar</p>
+                {getCarpitmaStats().slice(0, 6).map(([name, count]) => {
+                  const maxC = getCarpitmaStats()[0]?.[1] || 1;
+                  return (
+                    <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
+                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.73rem', color: 'var(--zinc-400)', width: '130px', flexShrink: 0 }}>{name}</span>
+                      <div style={{ flex: 1, height: '6px', background: 'var(--zinc-800)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${(count / maxC) * 100}%`, background: '#e05252', borderRadius: '3px', transition: 'width 0.4s' }} />
+                      </div>
+                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--zinc-500)', width: '20px', textAlign: 'right' }}>{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    )}
+
+    {metacView === 'review' && (
+      <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-700)', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.3rem', color: 'var(--gold)', marginBottom: 0 }}>Haftalık Metacognition Review</p>
+        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: 'var(--zinc-500)', marginTop: '-0.5rem' }}>
+          Bu hafta kaydettiğin {metacEvents.filter(e => {
+            const d = new Date(e.date);
+            const now = new Date();
+            const diff = (now - d) / (1000 * 60 * 60 * 24);
+            return diff <= 7;
+          }).length} olay var.
+        </p>
+
+        {[
+          { key: 'metaR1', label: 'Bu hafta hangi düşünce kalıbı en çok öne çıktı?' },
+          { key: 'metaR2', label: 'Bir olayda otopilottaydın — fark ettiğin an ne oldu?' },
+          { key: 'metaR3', label: 'Hangi çarpıtmayı tekrarlıyorsun? Kökeninde ne olabilir?' },
+          { key: 'metaR4', label: 'Gelecek hafta daha bilinçli olmak istediğin bir alan nedir?' },
+          { key: 'metaR5', label: 'Kendine adil bir tanık olabildin mi bu hafta?' },
+        ].map(q => {
+          const storageKey = `os_meta_review_${new Date().toISOString().slice(0, 10)}_${q.key}`;
+          const savedVal = localStorage.getItem(storageKey) || '';
+          return (
+            <div key={q.key}>
+              <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: 'var(--zinc-400)', display: 'block', marginBottom: '0.4rem' }}>{q.label}</label>
+              <textarea defaultValue={savedVal}
+                onBlur={e => localStorage.setItem(storageKey, e.target.value)}
+                rows={3}
+                style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+)}
         </main>
 
         {/* ── Mobile bottom tab bar ── */}
