@@ -1603,7 +1603,7 @@ export default function App() {
         )}
 
         {/* ── Header ── */}
-        <header style={{borderBottom:"1px solid var(--b)",position:"sticky",top:0,zIndex:50,background:"var(--nav-bg)",backdropFilter:"blur(14px)"}}>
+        <header style={{borderBottom:"1px solid var(--b)",position:"sticky",top:0,zIndex:50,background:"var(--nav-bg)",backdropFilter:"blur(14px)",paddingTop:"env(safe-area-inset-top)"}}>
           <div className="header-pad" style={{maxWidth:940,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:"var(--nav)"}}>
             {/* Logo */}
             <div style={{display:"flex",alignItems:"center",gap:10}}>
