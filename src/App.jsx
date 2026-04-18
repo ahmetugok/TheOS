@@ -53,9 +53,13 @@ export default function App() {
       if (err) setError(err.message);
     } else {
       const { data, error: err } = await signUp(email, password);
-      if (err) setError(err.message);
+      if (err) { setError(err.message); }
       else if (data.session) { /* email confirmation kapalı — anında giriş */ }
-      else setSignedUp(true);
+      else {
+        // confirmation açıksa direkt login dene
+        const { error: loginErr } = await signIn(email, password);
+        if (loginErr) setSignedUp(true); // hâlâ olmadıysa "email kontrol et" göster
+      }
     }
     setLoading(false);
   }
