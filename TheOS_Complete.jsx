@@ -33,6 +33,25 @@ const G = () => (
       --zinc-900:#0f0f11;--zinc-800:#161618;--zinc-700:rgba(255,255,255,0.10);
       --zinc-600:#706b65;--zinc-500:#8a857f;--zinc-400:#a09890;
       --zinc-300:#bab4ac;--zinc-200:#e8e3da;
+      --nav-bg:rgba(8,8,9,.94);--overlay-bg:rgba(4,4,5,.7);
+    }
+    html[data-theme="light"]{
+      --bg:#f5f2ec;--s1:#ede9e0;--s2:#e6e0d4;--s3:#ddd7c8;
+      --b:rgba(0,0,0,0.09);--bh:rgba(0,0,0,0.16);
+      --tx:#1a1814;--txd:#9a9080;--txm:#706b65;
+      --gold:#9a7428;--gold-s:rgba(154,116,40,0.10);--gold-m:rgba(154,116,40,0.22);
+      --red:#b83232;--red-s:rgba(184,50,50,0.08);
+      --blue:#2a7fc4;--blue-s:rgba(42,127,196,0.10);
+      --green:#2e8059;--green-s:rgba(46,128,89,0.10);
+      --violet:#6a4cb0;--violet-s:rgba(106,76,176,0.10);
+      --amber:#b87c30;--amber-s:rgba(184,124,48,0.10);--amber-m:rgba(184,124,48,0.20);
+      --rose:#a84858;--rose-s:rgba(168,72,88,0.10);
+      --sage:#4e8a5e;--sage-s:rgba(78,138,94,0.10);
+      --slate:#5a7a98;--slate-s:rgba(90,122,152,0.10);
+      --zinc-900:#ede9e0;--zinc-800:#e6e0d4;--zinc-700:rgba(0,0,0,0.09);
+      --zinc-600:#9a9080;--zinc-500:#706b65;--zinc-400:#4a4540;
+      --zinc-300:#2a2520;--zinc-200:#1a1814;
+      --nav-bg:rgba(245,242,236,.94);--overlay-bg:rgba(200,195,185,.7);
     }
     body{background:var(--bg);color:var(--tx);font-family:var(--fb);-webkit-text-size-adjust:100%;}
     input,textarea{font-family:var(--fb);background:transparent;border:none;outline:none;color:var(--tx);resize:none;font-size:15px;line-height:1.7;}
@@ -71,7 +90,7 @@ const G = () => (
     @media(max-width:700px){
       .desk-nav{display:none!important;}
       .mob-menu{display:flex;}
-      .mob-overlay{display:block;position:fixed;inset:0;z-index:90;background:rgba(4,4,5,.7);backdrop-filter:blur(6px);}
+      .mob-overlay{display:block;position:fixed;inset:0;z-index:90;background:var(--overlay-bg);backdrop-filter:blur(6px);}
       .mob-nav-panel{
         position:fixed;top:0;right:0;bottom:0;width:240px;z-index:91;
         background:var(--s1);border-left:1px solid var(--bh);
@@ -89,7 +108,7 @@ const G = () => (
       .mob-tabbar{
         display:flex!important;
         position:fixed;bottom:0;left:0;right:0;z-index:80;
-        background:rgba(8,8,9,.97);border-top:1px solid var(--b);
+        background:var(--nav-bg);border-top:1px solid var(--b);
         backdrop-filter:blur(12px);
         padding:6px 0 max(6px,env(safe-area-inset-bottom));
       }
@@ -1406,6 +1425,11 @@ export default function App() {
   const [loaded, setLoaded]     = useState(false);
   const [saved, setSaved]       = useState(true);
   const [mobOpen, setMobOpen]   = useState(false);
+  const [theme, setTheme]       = useState(() => localStorage.getItem('os_theme') || 'dark');
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('os_theme', theme);
+  }, [theme]);
   const [metacEvents, setMetacEvents] = useState(() => {
     try { return JSON.parse(localStorage.getItem('metac_events') || '[]'); } catch { return []; }
   });
@@ -1579,7 +1603,7 @@ export default function App() {
         )}
 
         {/* ── Header ── */}
-        <header style={{borderBottom:"1px solid var(--b)",position:"sticky",top:0,zIndex:50,background:"rgba(8,8,9,.94)",backdropFilter:"blur(14px)"}}>
+        <header style={{borderBottom:"1px solid var(--b)",position:"sticky",top:0,zIndex:50,background:"var(--nav-bg)",backdropFilter:"blur(14px)"}}>
           <div className="header-pad" style={{maxWidth:940,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:"var(--nav)"}}>
             {/* Logo */}
             <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -1597,6 +1621,7 @@ export default function App() {
             </nav>
             {/* Right side */}
             <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <button onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} title="Tema değiştir" style={{background:"transparent",border:"none",cursor:"pointer",color:"var(--txd)",fontSize:14,padding:"4px 6px",borderRadius:6,lineHeight:1}}>{theme==='dark'?'☀':'🌙'}</button>
               <button onClick={signOut} title="Çıkış yap" style={{background:"transparent",border:"none",cursor:"pointer",color:"var(--txd)",fontSize:14,padding:"4px 6px",borderRadius:6,lineHeight:1}}>⎋</button>
               <SaveDot saved={saved}/>
               <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 12px",borderRadius:14}}>
