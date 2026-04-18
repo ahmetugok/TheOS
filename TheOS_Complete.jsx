@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { store } from "./src/lib/supabase";
+import { store, signOut } from "./src/lib/supabase";
 
 /* ─────────────────────────── GLOBAL STYLES ─────────────────────────── */
 const G = () => (
@@ -1597,6 +1597,7 @@ export default function App() {
             </nav>
             {/* Right side */}
             <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <button onClick={signOut} title="Çıkış yap" style={{background:"transparent",border:"none",cursor:"pointer",color:"var(--txd)",fontSize:14,padding:"4px 6px",borderRadius:6,lineHeight:1}}>⎋</button>
               <SaveDot saved={saved}/>
               <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 12px",borderRadius:14}}>
                 <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:14,fontWeight:600}}>{xp.toLocaleString()} XP</span>
