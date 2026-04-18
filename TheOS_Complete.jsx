@@ -515,7 +515,7 @@ function DeepWorkTimer({ onSession, xp, setXp, sessions, setSessions }) {
       position:"fixed",top:0,left:0,
       width:"100vw",height:"100vh",
       zIndex:99999,
-      background:"#030304",
+      background:"var(--bg)",
       display:"flex",flexDirection:"column",
       alignItems:"center",justifyContent:"center",
       animation:"fi .3s ease",
@@ -524,7 +524,7 @@ function DeepWorkTimer({ onSession, xp, setXp, sessions, setSessions }) {
       <p style={{fontFamily:"var(--fd)",fontSize:18,fontStyle:"italic",color:"var(--txm)",letterSpacing:"0.06em",marginBottom:40,textAlign:"center",padding:"0 20px"}}>{project||"Derin Odak"}</p>
       {timerCore}
       <div style={{marginTop:40,display:"flex",gap:16}}>
-        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:15,fontWeight:600,padding:"13px 44px",borderRadius:10,border:"none",cursor:"pointer",background:"var(--gold)",color:"#030304",letterSpacing:"0.02em"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
+        <button onClick={running?pause:start} style={{fontFamily:"var(--fb)",fontSize:15,fontWeight:600,padding:"13px 44px",borderRadius:10,border:"none",cursor:"pointer",background:"var(--gold)",color:"var(--bg)",letterSpacing:"0.02em"}}>{running?"⏸ Duraklat":"▶ Başlat"}</button>
         <button onClick={()=>{reset();setFocusMode(false);}} style={{fontFamily:"var(--fb)",fontSize:15,padding:"13px 28px",borderRadius:10,border:"1px solid var(--bh)",cursor:"pointer",background:"transparent",color:"var(--txm)"}}>Çık</button>
       </div>
       {sessions>0&&<p style={{marginTop:32,fontFamily:"var(--fm)",fontSize:12,color:"var(--txd)",letterSpacing:"0.08em"}}>{sessions} seans tamamlandı</p>}
