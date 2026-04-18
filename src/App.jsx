@@ -52,8 +52,9 @@ export default function App() {
       const { error: err } = await signIn(email, password);
       if (err) setError(err.message);
     } else {
-      const { error: err } = await signUp(email, password);
+      const { data, error: err } = await signUp(email, password);
       if (err) setError(err.message);
+      else if (data.session) { /* email confirmation kapalı — anında giriş */ }
       else setSignedUp(true);
     }
     setLoading(false);
