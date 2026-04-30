@@ -800,10 +800,10 @@ function BrainDump() {
             <div style={{width:5,height:5,borderRadius:"50%",background:saving?"var(--amber)":"var(--green)",animation:saving?"pulse 1s infinite":"none",transition:"background .3s"}}/>
           </div>
         </div>
-        <div style={{padding:"24px 28px",backgroundImage:isToday?"repeating-linear-gradient(transparent,transparent 31px,rgba(255,255,255,.022) 31px,rgba(255,255,255,.022) 32px)":"none",backgroundSize:"100% 32px",backgroundPositionY:"24px"}}>
+        <div style={{padding:"24px 28px",backgroundImage:isEditable?"repeating-linear-gradient(transparent,transparent 31px,rgba(255,255,255,.022) 31px,rgba(255,255,255,.022) 32px)":"none",backgroundSize:"100% 32px",backgroundPositionY:"24px"}}>
           <textarea value={text} onChange={e=>handleChange(e.target.value)} readOnly={!isEditable}
             placeholder={isEditable?"Aklındaki her şeyi buraya dök.\n\nNe düşünüyorsun? Ne hissediyorsun? Neyi çözmek istiyorsun?\nFiltre yok. Sadece yaz.":"(geçmiş kayıt — salt okunur)"}
-            rows={16} style={{width:"100%",fontSize:15,lineHeight:"32px",letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
+            rows={16} style={{width:"100%",fontSize:15,lineHeight:"32px",letterSpacing:"0.01em",color:isEditable?"var(--tx)":"var(--txm)"}}/>
         </div>
       </div>
     </div>
