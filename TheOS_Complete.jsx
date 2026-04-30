@@ -1167,7 +1167,88 @@ const scoreLbl = (s) => s===100?"Kusursuz":s>=80?"Güçlü":s>=55?"Orta":s>=30?"
 const fmtShort = (iso) => new Date(iso).toLocaleDateString("tr-TR",{weekday:"short",day:"numeric",month:"short"});
 const fmtLong  = (iso) => new Date(iso).toLocaleDateString("tr-TR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 
-function LogCard({ entry, habits, morning, expanded, onToggle }) {
+function EditLogModal({ entry, habits, morning, onSave, onClose }) {
+  const [hDone, setHD] = useState(() => {
+    const m = {};
+    habits.forEach(h => { m[h.id] = entry.habits?.includes(h.text) || false; });
+    return m;
+  });
+  const [mDone, setMD] = useState(() => {
+    const m = {};
+    morning.forEach(i => { m[i.id] = entry.morning?.includes(i.text) || false; });
+    return m;
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const mScore = morning.length ? Math.round(morning.filter(i=>mDone[i.id]).length/morning.length*100) : 0;
+    const hScore = habits.length  ? Math.round(habits.filter(h=>hDone[h.id]).length/habits.length*100)   : 0;
+    const dayScore = Math.round((mScore+hScore)/2);
+    const updated = {
+      ...entry,
+      dayScore,
+      habits:  habits.filter(h=>hDone[h.id]).map(h=>h.text),
+      morning: morning.filter(i=>mDone[i.id]).map(i=>i.text),
+      editedAt: new Date().toISOString(),
+    };
+    const existing = await store.get('theos_logs') || [];
+    const newLogs = existing.map(e => e.date === entry.date ? updated : e);
+    await store.set('theos_logs', newLogs);
+    setSaving(false);
+    onSave(newLogs);
+  };
+
+  return (
+    <div style={{position:'fixed',inset:0,zIndex:200,background:'rgba(4,4,5,.92)',backdropFilter:'blur(8px)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{background:'var(--s1)',border:'1px solid var(--bh)',borderRadius:20,padding:'28px 32px',maxWidth:480,width:'92%',animation:'fu .25s ease',maxHeight:'85vh',overflowY:'auto'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+          <p style={{fontFamily:'var(--fd)',fontSize:20,fontStyle:'italic',color:'var(--tx)'}}>{fmtLong(entry.date)}</p>
+          <button onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--txd)',fontSize:18}}>✕</button>
+        </div>
+        <div style={{marginBottom:20}}>
+          <p style={{fontSize:9,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--txd)',fontFamily:'var(--fm)',marginBottom:10}}>Sabah Ritüeli</p>
+          <div style={{display:'flex',flexDirection:'column',gap:7}}>
+            {morning.map(item => {
+              const d = !!mDone[item.id];
+              return (
+                <div key={item.id} onClick={()=>setMD(p=>({...p,[item.id]:!p[item.id]}))} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:9,cursor:'pointer',background:d?'var(--amber-s)':'var(--s2)',border:`1px solid ${d?'var(--amber-m)':'var(--b)'}`,transition:'all .2s'}}>
+                  <div style={{width:15,height:15,borderRadius:3,flexShrink:0,border:`1.5px solid ${d?'var(--amber)':'var(--txd)'}`,background:d?'var(--amber)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#080809" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                  <span style={{fontSize:13,color:d?'var(--txm)':'var(--tx)'}}>{item.text}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{marginBottom:24}}>
+          <p style={{fontSize:9,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--txd)',fontFamily:'var(--fm)',marginBottom:10}}>Alışkanlıklar</p>
+          <div style={{display:'flex',flexDirection:'column',gap:7}}>
+            {habits.map(h => {
+              const d = !!hDone[h.id];
+              const c = HABIT_CLR[h.text]||'var(--gold)';
+              return (
+                <div key={h.id} onClick={()=>setHD(p=>({...p,[h.id]:!p[h.id]}))} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:9,cursor:'pointer',background:d?`${c}08`:'var(--s2)',border:`1px solid ${d?`${c}22`:'var(--b)'}`,transition:'all .2s'}}>
+                  <div style={{width:15,height:15,borderRadius:3,flexShrink:0,border:`1.5px solid ${d?c:'var(--txd)'}`,background:d?c:'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#080809" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                  <span style={{fontSize:13,color:d?'var(--txm)':'var(--tx)'}}>{h.text}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div style={{display:'flex',gap:10}}>
+          <button onClick={handleSave} disabled={saving} style={{flex:1,padding:'11px',borderRadius:10,border:'none',cursor:'pointer',background:'var(--gold)',color:'#030304',fontSize:13,fontWeight:600,fontFamily:'var(--fb)'}}>{saving?'Kaydediliyor...':'Kaydet'}</button>
+          <button onClick={onClose} style={{padding:'11px 18px',borderRadius:10,cursor:'pointer',border:'1px solid var(--b)',background:'transparent',color:'var(--txd)',fontSize:13,fontFamily:'var(--fb)'}}>Vazgeç</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LogCard({ entry, habits, morning, expanded, onToggle, onEdit }) {
   const sc = scoreClr(entry.dayScore);
   return (
     <div style={{background:"var(--s1)",border:`1px solid ${expanded?"var(--bh)":"var(--b)"}`,borderRadius:14,overflow:"hidden",transition:"border-color .2s"}}>
@@ -1199,6 +1280,7 @@ function LogCard({ entry, habits, morning, expanded, onToggle }) {
               <p style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.08em"}}>{s.l}</p>
             </div>
           ))}
+          <button onClick={e=>{e.stopPropagation();onEdit(entry);}} title="Düzenle" style={{background:'transparent',border:'1px solid var(--b)',borderRadius:6,cursor:'pointer',color:'var(--txd)',fontSize:11,padding:'3px 8px',transition:'all .2s'}}>✎</button>
           <span style={{fontSize:11,color:"var(--txd)",marginLeft:2}}>{expanded?"▲":"▼"}</span>
         </div>
       </div>
@@ -1322,10 +1404,11 @@ function ScoreTrend({ logs }) {
 }
 
 function Logs({ habits=[], morning=[] }) {
-  const [logs, setLogs]       = useState([]);
+  const [logs, setLogs]         = useState([]);
   const [expanded, setExpanded] = useState(null);
-  const [filter, setFilter]   = useState("all");
-  const [loaded, setLoaded]   = useState(false);
+  const [filter, setFilter]     = useState("all");
+  const [loaded, setLoaded]     = useState(false);
+  const [editEntry, setEditEntry] = useState(null);
 
   useEffect(()=>{
     (async()=>{ const d=await store.get("theos_logs")||[]; setLogs(d); setLoaded(true); })();
@@ -1346,6 +1429,15 @@ function Logs({ habits=[], morning=[] }) {
 
   return (
     <div>
+      {editEntry && (
+        <EditLogModal
+          entry={editEntry}
+          habits={habits}
+          morning={morning}
+          onSave={(newLogs)=>{ setLogs(newLogs); setEditEntry(null); }}
+          onClose={()=>setEditEntry(null)}
+        />
+      )}
       <div className="fu"><LogSummary logs={logs}/></div>
       <div className="fu1"><ScoreTrend logs={logs}/></div>
       <div className="fu1" style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
@@ -1361,7 +1453,10 @@ function Logs({ habits=[], morning=[] }) {
           ? <p style={{textAlign:"center",padding:"28px 0",fontSize:13,color:"var(--txd)",fontStyle:"italic"}}>Bu filtreye uygun log bulunamadı.</p>
           : filtered.map(e=>(
             <LogCard key={e.date} entry={e} habits={habits} morning={morning}
-              expanded={expanded===e.date} onToggle={()=>setExpanded(p=>p===e.date?null:e.date)}/>
+              expanded={expanded===e.date}
+              onToggle={()=>setExpanded(p=>p===e.date?null:e.date)}
+              onEdit={setEditEntry}
+            />
           ))
         }
       </div>
