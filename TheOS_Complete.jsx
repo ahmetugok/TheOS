@@ -661,6 +661,7 @@ function AutopilotBreaker() {
   const [savedMsg, setSavedMsg] = useState(false);
   const ref = useRef(null);
   const q = AUTOPILOT_QS[idx];
+  const isEditable = (() => { const d = new Date(dateView + 'T00:00:00'); const limit = new Date(); limit.setDate(limit.getDate() - 7); limit.setHours(0,0,0,0); return d >= limit; })();
   const isToday = dateView === todayKey();
   const pastDays = lastNDays(8).slice(0,-1).reverse();
 
@@ -730,20 +731,20 @@ function AutopilotBreaker() {
           </div>
           <div style={{borderTop:`1px solid ${q.color}15`,paddingTop:18}}>
             <textarea ref={ref}
-              value={isToday ? (answers[q.id]??savedQs[q.id]??"") : (savedQs[q.id]||"")}
-              onChange={e=>{ if(!isToday)return; setAnswers(p=>({...p,[q.id]:e.target.value})); }}
-              readOnly={!isToday}
-              placeholder={isToday?"Dürüstçe yaz. Sadece kendin için...":"(geçmiş kayıt — salt okunur)"}
+              value={isEditable ? (answers[q.id]??savedQs[q.id]??"") : (savedQs[q.id]||"")}
+              onChange={e=>{ if(!isEditable)return; setAnswers(p=>({...p,[q.id]:e.target.value})); }}
+              readOnly={!isEditable}
+              placeholder={isEditable?"Dürüstçe yaz. Sadece kendin için...":"(geçmiş kayıt — salt okunur)"}
               rows={6} style={{width:"100%",fontSize:15,lineHeight:1.8,letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
           </div>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:14}}>
             <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>
-              {!isToday&&savedQs[q.id]
-                ? <span style={{color:"var(--rose)"}}>✓ {dateView === todayKey()?"bugün":new Date(dateView).toLocaleDateString("tr-TR",{day:"numeric",month:"short"})} kaydedildi</span>
+              {!isEditable&&savedQs[q.id]
+                ? <span style={{color:"var(--rose)"}}>✓ {new Date(dateView).toLocaleDateString("tr-TR",{day:"numeric",month:"short"})} kaydedildi</span>
                 : `${wc(answers[q.id]||"")} kelime`
               }
             </span>
-            {isToday&&<button onClick={handleSave} disabled={!answers[q.id]?.trim()}
+            {isEditable&&<button onClick={handleSave} disabled={!answers[q.id]?.trim()}
               style={{fontFamily:"var(--fm)",fontSize:11,padding:"7px 18px",borderRadius:8,border:`1px solid ${answers[q.id]?.trim()?q.color:"var(--b)"}`,background:savedMsg?q.bg:"transparent",color:savedMsg?q.color:answers[q.id]?.trim()?q.color:"var(--txd)",cursor:answers[q.id]?.trim()?"pointer":"default",transition:"all .25s"}}>
               {saving?"...":savedMsg?"✓ kaydedildi":"kaydet"}
             </button>}
@@ -765,7 +766,7 @@ function BrainDump() {
   const [saving, setSaving] = useState(false);
   const pastKeys = lastNDays(7).slice(0,-1).reverse();
   const saveT = useRef(null);
-  const isToday = dateView===todayKey();
+  const isEditable = (() => { const d = new Date(dateView + 'T00:00:00'); const limit = new Date(); limit.setDate(limit.getDate() - 7); limit.setHours(0,0,0,0); return d >= limit; })();
 
   useEffect(()=>{(async()=>{const d=await store.get(`theos_dump_${dateView}`);setText(d?.text||"");})();},[dateView]);
 
@@ -800,8 +801,8 @@ function BrainDump() {
           </div>
         </div>
         <div style={{padding:"24px 28px",backgroundImage:isToday?"repeating-linear-gradient(transparent,transparent 31px,rgba(255,255,255,.022) 31px,rgba(255,255,255,.022) 32px)":"none",backgroundSize:"100% 32px",backgroundPositionY:"24px"}}>
-          <textarea value={text} onChange={e=>handleChange(e.target.value)} readOnly={!isToday}
-            placeholder={isToday?"Aklındaki her şeyi buraya dök.\n\nNe düşünüyorsun? Ne hissediyorsun? Neyi çözmek istiyorsun?\nFiltre yok. Sadece yaz.":"(geçmiş kayıt — salt okunur)"}
+          <textarea value={text} onChange={e=>handleChange(e.target.value)} readOnly={!isEditable}
+            placeholder={isEditable?"Aklındaki her şeyi buraya dök.\n\nNe düşünüyorsun? Ne hissediyorsun? Neyi çözmek istiyorsun?\nFiltre yok. Sadece yaz.":"(geçmiş kayıt — salt okunur)"}
             rows={16} style={{width:"100%",fontSize:15,lineHeight:"32px",letterSpacing:"0.01em",color:isToday?"var(--tx)":"var(--txm)"}}/>
         </div>
       </div>
@@ -823,14 +824,14 @@ function WeeklyReview() {
     return `${d.getFullYear()}-W${String(w).padStart(2,"0")}`;
   });
 
-  const isCurrentWeek = selectedWk === weekKey();
+  const isEditable = weekKeys.indexOf(selectedWk) <= 1;
 
   useEffect(()=>{
     (async()=>{ const d=await store.get(`theos_review_${selectedWk}`); setReview(d||{}); })();
   },[selectedWk]);
 
   const handleChange = (key, val) => {
-    if(!isCurrentWeek) return;
+    if(!isEditable) return;
     const up={...review,[key]:val}; setReview(up); setSaving(true);
     clearTimeout(saveT.current);
     saveT.current=setTimeout(async()=>{ await store.set(`theos_review_${selectedWk}`,up); setSaving(false); setSaved(true); setTimeout(()=>setSaved(false),1500); },700);
@@ -875,7 +876,7 @@ function WeeklyReview() {
         </div>
       </div>
 
-      {!isCurrentWeek&&(
+      {!isEditable&&(
         <div className="fu1" style={{marginBottom:16,padding:"10px 16px",background:"rgba(255,255,255,.03)",border:"1px solid var(--b)",borderRadius:10}}>
           <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic"}}>📖 Geçmiş hafta — salt okunur</p>
         </div>
@@ -898,8 +899,8 @@ function WeeklyReview() {
                   <FieldLabel color={filled?p.color:"var(--txd)"}>{p.label}</FieldLabel>
                   <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:12}}>{p.hint}</p>
                   <textarea value={val} onChange={e=>handleChange(p.key,e.target.value)}
-                    readOnly={!isCurrentWeek}
-                    placeholder={isCurrentWeek?"Yaz...":"(bu haftada kayıt yok)"}
+                    readOnly={!isEditable}
+                    placeholder={isEditable?"Yaz...":"(bu haftada kayıt yok)"}
                     rows={p.key==="nextfocus"?2:3}
                     style={{width:"100%",fontSize:14,lineHeight:1.75,color:isCurrentWeek?"var(--tx)":"var(--txm)"}}/>
                   {wc(val)>0&&<p style={{fontSize:10,color:wc(val)>10?p.color:"var(--txd)",fontFamily:"var(--fm)",marginTop:5,textAlign:"right"}}>{wc(val)} kelime</p>}
@@ -909,7 +910,7 @@ function WeeklyReview() {
           );
         })}
       </div>
-      {isCurrentWeek&&done===4&&<div className="fi" style={{marginTop:20,padding:"16px 20px",background:"var(--green-s)",border:"1px solid rgba(58,148,105,.2)",borderRadius:12,textAlign:"center"}}>
+      {isEditable&&done===4&&<div className="fi" style={{marginTop:20,padding:"16px 20px",background:"var(--green-s)",border:"1px solid rgba(58,148,105,.2)",borderRadius:12,textAlign:"center"}}>
         <p style={{fontFamily:"var(--fd)",fontSize:17,fontStyle:"italic",color:"var(--green)"}}>Bu haftanın review'u tamamlandı.</p>
         <p style={{fontSize:12,color:"var(--txd)",marginTop:4}}>Refleksiyon yapan %1'in içindesin. Devam et.</p>
       </div>}
