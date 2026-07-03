@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { store, signOut } from "./src/lib/supabase";
+import Breaker from "./src/Breaker.jsx";
 
 /* ─────────────────────────── GLOBAL STYLES ─────────────────────────── */
 const G = () => (
@@ -1503,6 +1504,7 @@ const TABS = [
   {key:"northstar",label:"North Star",     icon:"◉"},
   {key:"journal",  label:"Mind Journal",   icon:"◇"},
   {key:"progress", label:"Progress",       icon:"◆"},
+  {key:"breaker",  label:"Breaker",        icon:"⛓"},
   {key:"logs",     label:"Loglar",         icon:"◌"},
   {key:"metac",    label:"Metacognition",  icon:"◑"},
 ];
@@ -1743,6 +1745,7 @@ export default function App() {
           {tab==="daily"     && <DailyOS morningItems={DEF_MORNING} morningDone={morningDone} onToggleMorning={toggleMorning} habits={DEF_HABITS} habitsDone={habitsDone} onToggleHabit={toggleHabit} streak={streak} onEndDay={handleEndDay} xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions} focusText={focusText} setFocusText={setFocusText}/>}
           {tab==="journal"   && <MindJournal/>}
           {tab==="progress"  && <Progress xp={xp} streak={streak}/>}
+          {tab==="breaker"   && <Breaker setXp={setXp}/>}
           {tab==="logs"      && <Logs habits={DEF_HABITS} morning={DEF_MORNING}/>}
           {tab==="metac" && (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
