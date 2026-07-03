@@ -67,7 +67,7 @@ export default function App() {
   if (signedUp) {
     return (
       <div style={S.wrap}>
-        <h2 style={{ margin: 0, fontSize: '22px' }}>Daily OS</h2>
+        <h2 style={{ margin: 0, fontSize: '22px' }}>TheOS</h2>
         <p style={{ color: '#a09890', textAlign: 'center', maxWidth: '280px', lineHeight: 1.6 }}>
           Kayıt başarılı! E-postanı onayla, ardından giriş yap.
         </p>
@@ -80,7 +80,7 @@ export default function App() {
 
   return (
     <div style={S.wrap}>
-      <h2 style={{ margin: 0, fontSize: '22px', letterSpacing: '0.05em' }}>Daily OS</h2>
+      <h2 style={{ margin: 0, fontSize: '22px', letterSpacing: '0.05em' }}>TheOS</h2>
       <input
         style={S.input} type="email" placeholder="E-posta"
         value={email} onChange={e => setEmail(e.target.value)}
