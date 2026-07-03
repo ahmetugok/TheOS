@@ -53,7 +53,7 @@ Veri modeli (localStorage):
 - Günlük check + ruh hali (1-5) + tetikleyici notu.
 - Takvim görünümü (başarılı/başarısız günler, ruh hali göstergeleri).
 - Streak istatistikleri.
-- Forge meydan okuma sistemi (Faz 2).
+- Forge meydan okuma sistemi (çok günlü challenge'lar + günlük check-in).
 - JSON dışa/içe aktarma (eski Chain Breaker yedeğini import → seriler korunur).
 
 ## Veri Modeli & Senkron
@@ -64,7 +64,7 @@ TheOS `store` (Supabase + localStorage) kullanılır. Yeni key'ler:
 |---|---|
 | `theos_breaker_chains` | `[{id:"h1", name:"Sigara", icon:"🚬", color:"#ef4444", createdAt:"2026-01-01"}]` |
 | `theos_breaker_logs` | `{ "2026-07-03": { "h1": true, "mood": 4, "note": "..." } }` |
-| `theos_breaker_forge` | Forge ilerleme durumu (Faz 2) |
+| `theos_breaker_forge` | Forge ilerleme durumu `{ [challengeId]: { startDate, checkins:{[date]:bool} } }` |
 
 Tarih formatı: `YYYY-MM-DD`. Sonuç: Breaker verisi cihazlar arası otomatik senkron +
 çevrimdışı çalışır.
@@ -89,11 +89,18 @@ TheOS'a Chain Breaker'dan kazandırılan özellik:
 - Chain Breaker'ın `icons/` seti + `manifest.json` (uygulama adı "TheOS", tema `#0a0a0b`).
 - Sonuç: telefona kurulabilir, çevrimdışı açılır.
 
-## Fazlama
+## Uygulama Adı
 
-- **Faz 1:** Kabuk entegrasyonu + PWA + Breaker çekirdeği (zincirler, takvim,
-  ruh hali/tetikleyici, streak, XP, JSON import). Günlük kullanılabilir ürün.
-- **Faz 2:** Forge meydan okuma sistemi.
+Uygulama adı **TheOS**. Giriş ekranındaki (`src/App.jsx`) "Daily OS" başlığı ve
+`document.title` "TheOS" olarak güncellenir; PWA manifest `name`/`short_name` = "TheOS".
+
+## Kapsam (tek faz)
+
+Tümü tek bir implementasyon planında:
+- Kabuk entegrasyonu (Breaker sekmesi).
+- PWA + offline.
+- Breaker çekirdeği: zincirler, takvim, ruh hali/tetikleyici, streak, XP, JSON import.
+- Forge meydan okuma sistemi.
 
 ## Kapsam Dışı (YAGNI)
 
