@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { store } from './lib/supabase';
 import { computeStreak } from './breaker/breakerData.js';
 
@@ -7,6 +7,37 @@ const todayKey = () => new Date().toISOString().slice(0, 10);
 const MOODS = ['😣', '😕', '😐', '🙂', '😄'];
 const COLORS = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#c8a86b'];
 const EMOJIS = ['🚬', '🍺', '🍬', '📱', '🎮', '🛒', '☕', '🌙', '🔥', '💪', '🧘', '📵'];
+const SUBS = [
+  { key: 'today', label: 'Bugün' },
+  { key: 'calendar', label: 'Takvim' },
+  { key: 'stats', label: 'İstatistik' },
+];
+const TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+const TR_DOW = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
+
+function addDaysUTC(dateStr, delta) {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + delta);
+  return d.toISOString().slice(0, 10);
+}
+function ymd(y, m, d) {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+function lastNDays(n, endStr) {
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(addDaysUTC(endStr, -i));
+  return out;
+}
+function longestStreak(logs, chainId) {
+  const dates = Object.keys(logs).filter(d => logs[d] && logs[d][chainId] === true).sort();
+  let best = 0, cur = 0, prev = null;
+  for (const d of dates) {
+    cur = prev && addDaysUTC(prev, 1) === d ? cur + 1 : 1;
+    if (cur > best) best = cur;
+    prev = d;
+  }
+  return best;
+}
 
 const S = {
   h2: { fontFamily: 'Cormorant Garamond, serif', fontSize: '1.8rem', color: 'var(--gold)', margin: '0 0 4px' },
@@ -36,6 +67,7 @@ export default function Breaker({ setXp }) {
   const [chains, setChains] = useState([]);
   const [logs, setLogs] = useState({});
   const [loaded, setLoaded] = useState(false);
+  const [view, setView] = useState('today');
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: '', icon: EMOJIS[0], color: COLORS[0] });
   const saveT = useRef(null);
@@ -79,9 +111,7 @@ export default function Breaker({ setXp }) {
     setAdding(false);
   };
 
-  const removeChain = (id) => {
-    setChains(prev => prev.filter(c => c.id !== id));
-  };
+  const removeChain = (id) => setChains(prev => prev.filter(c => c.id !== id));
 
   const toggleChain = (id) => {
     const was = todayLog[id] === true;
@@ -99,6 +129,37 @@ export default function Breaker({ setXp }) {
         <p style={S.sub}>Zincirlerini kır. Her gün seçimini işaretle, seriyi büyüt.</p>
       </div>
 
+      {/* Alt-sekmeler */}
+      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--b)' }}>
+        {SUBS.map(s => (
+          <button key={s.key} onClick={() => setView(s.key)}
+            style={{
+              fontFamily: 'var(--fm)', fontSize: 12, padding: '8px 18px', border: 'none', cursor: 'pointer',
+              background: 'transparent', color: view === s.key ? 'var(--tx)' : 'var(--txd)',
+              borderBottom: `2px solid ${view === s.key ? 'var(--gold)' : 'transparent'}`,
+              marginBottom: -1, letterSpacing: '0.04em', transition: 'all .2s',
+            }}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'today' && (
+        <TodayView
+          chains={chains} todayLog={todayLog} today={today} logs={logs}
+          patchToday={patchToday} toggleChain={toggleChain} removeChain={removeChain}
+          adding={adding} setAdding={setAdding} form={form} setForm={setForm} addChain={addChain}
+        />
+      )}
+      {view === 'calendar' && <CalendarView chains={chains} logs={logs} today={today} />}
+      {view === 'stats' && <StatsView chains={chains} logs={logs} today={today} />}
+    </div>
+  );
+}
+
+function TodayView({ chains, todayLog, today, logs, patchToday, toggleChain, removeChain, adding, setAdding, form, setForm, addChain }) {
+  return (
+    <>
       {/* Bugünkü ruh hali */}
       <div style={S.card}>
         <div style={{ ...S.label, marginBottom: 10 }}>Bugünün ruh hali</div>
@@ -108,9 +169,7 @@ export default function Breaker({ setXp }) {
             const active = todayLog.mood === val;
             return (
               <button key={val} onClick={() => patchToday({ mood: val })}
-                style={{
-                  ...S.chipBtn(active, 'var(--gold)'), width: 44, height: 44, fontSize: 22,
-                }}>
+                style={{ ...S.chipBtn(active, 'var(--gold)'), width: 44, height: 44, fontSize: 22 }}>
                 {m}
               </button>
             );
@@ -203,8 +262,7 @@ export default function Breaker({ setXp }) {
                   {streak > 0 ? `🔥 ${streak} günlük seri` : 'Bugün başla'}
                 </div>
               </div>
-              <button onClick={() => removeChain(chain.id)}
-                title="Sil"
+              <button onClick={() => removeChain(chain.id)} title="Sil"
                 style={{ background: 'none', border: 'none', color: 'var(--txd)', cursor: 'pointer', fontSize: 16, flexShrink: 0 }}>
                 ✕
               </button>
@@ -212,6 +270,140 @@ export default function Breaker({ setXp }) {
           );
         })}
       </div>
+    </>
+  );
+}
+
+function CalendarView({ chains, logs, today }) {
+  const [cursor, setCursor] = useState(() => {
+    const [y, m] = today.split('-').map(Number);
+    return { y, m: m - 1 };
+  });
+  const [selected, setSelected] = useState(null);
+
+  const cells = useMemo(() => {
+    const { y, m } = cursor;
+    const firstDow = (new Date(Date.UTC(y, m, 1)).getUTCDay() + 6) % 7; // Pt=0
+    const daysInMonth = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    const arr = [];
+    for (let i = 0; i < firstDow; i++) arr.push(null);
+    for (let d = 1; d <= daysInMonth; d++) arr.push(ymd(y, m, d));
+    return arr;
+  }, [cursor]);
+
+  const move = (delta) => setCursor(c => {
+    const d = new Date(Date.UTC(c.y, c.m + delta, 1));
+    return { y: d.getUTCFullYear(), m: d.getUTCMonth() };
+  });
+
+  const dayInfo = (dateStr) => {
+    const log = logs[dateStr] || {};
+    const doneCount = chains.filter(c => log[c.id] === true).length;
+    const ratio = chains.length ? doneCount / chains.length : 0;
+    return { doneCount, ratio, mood: log.mood, note: log.note };
+  };
+
+  const selInfo = selected ? dayInfo(selected) : null;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <button onClick={() => move(-1)} style={{ ...S.primaryBtn, background: 'var(--s3)', color: 'var(--tx)', padding: '6px 12px' }}>‹</button>
+        <div style={{ fontFamily: 'var(--fm)', fontSize: 14, color: 'var(--tx)', letterSpacing: '0.04em' }}>
+          {TR_MONTHS[cursor.m]} {cursor.y}
+        </div>
+        <button onClick={() => move(1)} style={{ ...S.primaryBtn, background: 'var(--s3)', color: 'var(--tx)', padding: '6px 12px' }}>›</button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+        {TR_DOW.map(d => (
+          <div key={d} style={{ textAlign: 'center', fontFamily: 'var(--fm)', fontSize: 9, color: 'var(--txd)' }}>{d}</div>
+        ))}
+        {cells.map((dateStr, i) => {
+          if (!dateStr) return <div key={`e${i}`} />;
+          const { ratio, mood } = dayInfo(dateStr);
+          const isToday = dateStr === today;
+          const dayNum = Number(dateStr.slice(-2));
+          const bg = ratio > 0
+            ? `rgba(201,168,76,${0.18 + ratio * 0.6})`
+            : 'var(--s3)';
+          return (
+            <button key={dateStr} onClick={() => setSelected(dateStr)}
+              style={{
+                aspectRatio: '1', borderRadius: 8, cursor: 'pointer',
+                background: bg,
+                border: `1px solid ${isToday ? 'var(--gold)' : selected === dateStr ? 'var(--txm)' : 'transparent'}`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1,
+                fontFamily: 'var(--fm)', color: 'var(--txm)', fontSize: 11,
+              }}>
+              <span>{dayNum}</span>
+              <span style={{ fontSize: 11, lineHeight: 1 }}>{mood ? MOODS[mood - 1] : ''}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {selInfo && (
+        <div style={S.card}>
+          <div style={{ fontFamily: 'var(--fm)', fontSize: 13, color: 'var(--tx)', marginBottom: 8 }}>
+            {selected} {selInfo.mood ? `· ${MOODS[selInfo.mood - 1]}` : ''}
+          </div>
+          <div style={{ fontFamily: 'var(--fm)', fontSize: 12, color: 'var(--gold)' }}>
+            {chains.length ? `${selInfo.doneCount}/${chains.length} zincir tutuldu` : 'Zincir yok'}
+          </div>
+          {selInfo.note && (
+            <div style={{ fontFamily: 'var(--fm)', fontSize: 12, color: 'var(--txm)', marginTop: 8, lineHeight: 1.5 }}>
+              {selInfo.note}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatsView({ chains, logs, today }) {
+  if (chains.length === 0) {
+    return (
+      <div style={{ ...S.card, textAlign: 'center', color: 'var(--txd)', fontFamily: 'var(--fm)', fontSize: 13 }}>
+        İstatistik için önce zincir ekle.
+      </div>
+    );
+  }
+  const window = lastNDays(84, today);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {chains.map(chain => {
+        const cur = computeStreak(logs, chain.id, today);
+        const best = longestStreak(logs, chain.id);
+        const hit = window.filter(d => (logs[d] || {})[chain.id] === true).length;
+        const pct = Math.round((hit / window.length) * 100);
+        return (
+          <div key={chain.id} style={{ ...S.card, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 18 }}>{chain.icon}</span>
+              <span style={{ fontFamily: 'var(--fm)', fontSize: 14, color: 'var(--tx)' }}>{chain.name}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 20 }}>
+              <Stat label="Güncel seri" value={`${cur}g`} />
+              <Stat label="En uzun seri" value={`${best}g`} />
+              <Stat label="Son 84 gün" value={`%${pct}`} />
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: 'var(--s3)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: chain.color, transition: 'width .3s' }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <span style={{ fontFamily: 'var(--fm)', fontSize: 18, color: 'var(--gold)', fontWeight: 600 }}>{value}</span>
+      <span style={{ fontFamily: 'var(--fm)', fontSize: 9, color: 'var(--txd)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</span>
     </div>
   );
 }
