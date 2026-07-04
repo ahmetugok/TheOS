@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { store } from './lib/supabase';
-import { computeStreak } from './breaker/breakerData.js';
+import { computeStreak, mapChainBreakerBackup } from './breaker/breakerData.js';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
@@ -26,6 +26,16 @@ function ymd(y, m, d) {
 function lastNDays(n, endStr) {
   const out = [];
   for (let i = 0; i < n; i++) out.push(addDaysUTC(endStr, -i));
+  return out;
+}
+function mergeChains(a, b) {
+  const map = new Map(a.map(c => [c.id, c]));
+  for (const c of b) if (c && c.id != null) map.set(c.id, c);
+  return [...map.values()];
+}
+function mergeLogs(a, b) {
+  const out = { ...a };
+  for (const d of Object.keys(b)) out[d] = { ...(out[d] || {}), ...b[d] };
   return out;
 }
 function longestStreak(logs, chainId) {
@@ -113,6 +123,40 @@ export default function Breaker({ setXp }) {
 
   const removeChain = (id) => setChains(prev => prev.filter(c => c.id !== id));
 
+  const fileRef = useRef(null);
+  const exportData = () => {
+    const payload = { chains, logs, exportDate: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `theos-breaker-backup-${today}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const importData = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try { data = JSON.parse(reader.result); } catch { return; }
+      let nc, nl;
+      if (Array.isArray(data.chains)) {
+        nc = data.chains;
+        nl = data.logs && typeof data.logs === 'object' ? data.logs : {};
+      } else if (Array.isArray(data.habits) || data.dailyLogs) {
+        const mapped = mapChainBreakerBackup(data);
+        nc = mapped.chains;
+        nl = mapped.logs;
+      } else {
+        return;
+      }
+      setChains(prev => mergeChains(prev, nc));
+      setLogs(prev => mergeLogs(prev, nl));
+    };
+    reader.readAsText(file);
+  };
+
   const toggleChain = (id) => {
     const was = todayLog[id] === true;
     patchToday({ [id]: !was });
@@ -153,6 +197,20 @@ export default function Breaker({ setXp }) {
       )}
       {view === 'calendar' && <CalendarView chains={chains} logs={logs} today={today} />}
       {view === 'stats' && <StatsView chains={chains} logs={logs} today={today} />}
+
+      {/* Veri yedekleme */}
+      <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--b)', paddingTop: 16 }}>
+        <button onClick={exportData}
+          style={{ ...S.primaryBtn, background: 'var(--s3)', color: 'var(--tx)', fontSize: 12 }}>
+          Dışa aktar
+        </button>
+        <button onClick={() => fileRef.current?.click()}
+          style={{ ...S.primaryBtn, background: 'var(--s3)', color: 'var(--tx)', fontSize: 12 }}>
+          İçe aktar
+        </button>
+        <input ref={fileRef} type="file" accept="application/json,.json" style={{ display: 'none' }}
+          onChange={e => { importData(e.target.files?.[0]); e.target.value = ''; }} />
+      </div>
     </div>
   );
 }
