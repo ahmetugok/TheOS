@@ -837,6 +837,7 @@ function WeeklyReview() {
   });
 
   const isEditable = weekKeys.indexOf(selectedWk) <= 1;
+  const isCurrentWeek = selectedWk === weekKeys[0];
 
   useEffect(()=>{
     (async()=>{ const d=await store.get(`theos_review_${selectedWk}`); setReview(d||{}); })();
