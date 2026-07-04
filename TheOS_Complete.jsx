@@ -104,7 +104,9 @@ const G = () => (
       .progress-hero{flex-direction:column!important;gap:20px!important;}
       .log-summary-grid{grid-template-columns:repeat(2,1fr)!important;}
       .main-pad{padding:20px 14px 100px!important;}
-      .header-pad{padding:0 14px!important;}
+      .header-pad{padding:0 14px!important;gap:10px;}
+      /* Declutter header on phones */
+      .hide-mob{display:none!important;}
       /* Bottom tab bar on mobile */
       .mob-tabbar{
         display:flex!important;
@@ -113,6 +115,7 @@ const G = () => (
         backdrop-filter:blur(12px);
         padding:6px 0 max(6px,env(safe-area-inset-bottom));
       }
+      .mob-tabbar button{min-height:52px;}
     }
     @media(min-width:701px){
       .mob-tabbar{display:none!important;}
@@ -267,7 +270,7 @@ function IdentityCore({ data, onChange }) {
           <Tag color="blue">Vizyon Eksenleri</Tag>
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+        <div className="grid-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
           <Card accent="red">
             <FieldLabel color="var(--red)">Anti-Vizyon — Kaçtığın Hayat</FieldLabel>
             <textarea value={data.antiVision} onChange={e=>up("antiVision",e.target.value)}
@@ -289,7 +292,7 @@ function IdentityCore({ data, onChange }) {
           <Tag color="green">Ikigai Kesişimi</Tag>
           <div style={{flex:1,height:1,background:"var(--b)"}}/>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+        <div className="grid-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
           {ikigaiFields.map(f=>(
             <Card key={f.key} accent={f.accent}>
               <FieldLabel color={f.color}>{f.label}</FieldLabel>
@@ -437,6 +440,14 @@ function DeepWorkTimer({ onSession, xp, setXp, sessions, setSessions }) {
   const [toast, setToast]         = useState(null);
   const iRef    = useRef(null);
   const totalRef = useRef(PRESETS[0].sec);
+
+  // Ekran döndürme / yeniden boyutlandırmada timer boyutunu yeniden hesapla
+  const [, forceResize] = useState(0);
+  useEffect(()=>{
+    const h = () => forceResize(v=>v+1);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  },[]);
 
   const progress = 1 - secs / totalRef.current;
   const NORM_S = 200; const FOCUS_S = 300;
@@ -715,11 +726,11 @@ function AutopilotBreaker() {
       <div className="fu1" style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:20}}>
         {AUTOPILOT_QS.map((qs,i)=>{
           const hasAnswer = !!savedQs[qs.id];
-          return <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 11px",borderRadius:16,border:`1px solid ${i===idx?qs.color:hasAnswer?"rgba(255,255,255,.12)":"var(--b)"}`,background:i===idx?qs.bg:hasAnswer?"rgba(255,255,255,.04)":"transparent",color:i===idx?qs.color:hasAnswer?"var(--txm)":"var(--txd)",cursor:"pointer",transition:"all .2s",position:"relative"}}>
+          return <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"7px 12px",borderRadius:16,border:`1px solid ${i===idx?qs.color:hasAnswer?"rgba(255,255,255,.12)":"var(--b)"}`,background:i===idx?qs.bg:hasAnswer?"rgba(255,255,255,.04)":"transparent",color:i===idx?qs.color:hasAnswer?"var(--txm)":"var(--txd)",cursor:"pointer",transition:"all .2s",position:"relative"}}>
             {i+1}{hasAnswer&&<span style={{position:"absolute",top:-3,right:-3,width:6,height:6,borderRadius:"50%",background:qs.color}}/>}
           </button>;
         })}
-        <button onClick={()=>goTo(Math.floor(Math.random()*AUTOPILOT_QS.length))} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 11px",borderRadius:16,border:"1px dashed var(--bh)",background:"transparent",color:"var(--txd)",cursor:"pointer",marginLeft:4}}>⟳</button>
+        <button onClick={()=>goTo(Math.floor(Math.random()*AUTOPILOT_QS.length))} style={{fontFamily:"var(--fm)",fontSize:11,padding:"7px 12px",borderRadius:16,border:"1px dashed var(--bh)",background:"transparent",color:"var(--txd)",cursor:"pointer",marginLeft:4}}>⟳</button>
         {answeredCount>0&&<span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",alignSelf:"center",marginLeft:4}}>{answeredCount}/8 yanıtlandı</span>}
       </div>
 
@@ -1508,6 +1519,8 @@ const TABS = [
   {key:"logs",     label:"Loglar",         icon:"◌"},
   {key:"metac",    label:"Metacognition",  icon:"◑"},
 ];
+// Alt bar'da yalnızca en sık kullanılan sekmeler; gerisi "Daha" panelinde
+const PRIMARY_TAB_KEYS = ["daily","journal","breaker","progress"];
 
 export default function App() {
   const [tab, setTab]           = useState("daily");
@@ -1706,8 +1719,8 @@ export default function App() {
             {/* Logo */}
             <div style={{display:"flex",alignItems:"center",gap:10}}>
               <span style={{fontFamily:"var(--fd)",fontSize:20,fontWeight:600,color:"var(--tx)"}}>The OS</span>
-              <div style={{width:1,height:13,background:"var(--bh)"}}/>
-              <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txm)",letterSpacing:"0.1em"}}>{ activeTab?.label.toUpperCase()}</span>
+              <div className="hide-mob" style={{width:1,height:13,background:"var(--bh)"}}/>
+              <span className="hide-mob" style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txm)",letterSpacing:"0.1em"}}>{ activeTab?.label.toUpperCase()}</span>
             </div>
             {/* Desktop Nav */}
             <nav className="desk-nav" style={{display:"flex",gap:1}}>
@@ -1721,7 +1734,7 @@ export default function App() {
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               <button onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} title="Tema değiştir" style={{background:"transparent",border:"none",cursor:"pointer",color:"var(--txd)",fontSize:14,padding:"4px 6px",borderRadius:6,lineHeight:1}}>{theme==='dark'?'☀':'🌙'}</button>
               <button onClick={signOut} title="Çıkış yap" style={{background:"transparent",border:"none",cursor:"pointer",color:"var(--txd)",fontSize:14,padding:"4px 6px",borderRadius:6,lineHeight:1}}>⎋</button>
-              <SaveDot saved={saved}/>
+              <span className="hide-mob" style={{display:"inline-flex"}}><SaveDot saved={saved}/></span>
               <div style={{display:"flex",alignItems:"center",gap:8,background:"var(--s2)",border:"1px solid var(--gold-m)",padding:"5px 12px",borderRadius:14}}>
                 <span className="gold-text" style={{fontFamily:"var(--fd)",fontSize:14,fontWeight:600}}>{xp.toLocaleString()} XP</span>
                 <div style={{width:1,height:11,background:"var(--bh)"}}/>
@@ -1984,7 +1997,7 @@ export default function App() {
                 const max = Math.max(...Object.values(getOlayTipStats()), 1);
                 return (
                   <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
-                    <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-400)', width: '110px', flexShrink: 0 }}>{t.icon} {t.label}</span>
+                    <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-400)', width: '90px', flexShrink: 0 }}>{t.icon} {t.label}</span>
                     <div style={{ flex: 1, height: '6px', background: 'var(--zinc-800)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${(count / max) * 100}%`, background: 'var(--gold)', borderRadius: '3px', transition: 'width 0.4s' }} />
                     </div>
@@ -2001,7 +2014,7 @@ export default function App() {
                   const maxC = getCarpitmaStats()[0]?.[1] || 1;
                   return (
                     <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
-                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.73rem', color: 'var(--zinc-400)', width: '130px', flexShrink: 0 }}>{name}</span>
+                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.73rem', color: 'var(--zinc-400)', width: '96px', flexShrink: 0 }}>{name}</span>
                       <div style={{ flex: 1, height: '6px', background: 'var(--zinc-800)', borderRadius: '3px', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${(count / maxC) * 100}%`, background: '#e05252', borderRadius: '3px', transition: 'width 0.4s' }} />
                       </div>
@@ -2053,15 +2066,24 @@ export default function App() {
 )}
         </main>
 
-        {/* ── Mobile bottom tab bar ── */}
+        {/* ── Mobile bottom tab bar (birincil sekmeler + Daha) ── */}
         <nav className="mob-tabbar" style={{display:"none"}}>
-          {TABS.map(t=>(
-            <button key={t.key} onClick={()=>setTab(t.key)}
-              style={{flex:1,padding:"6px 2px 2px",border:"none",background:"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,color:tab===t.key?"var(--gold)":"var(--txd)",transition:"color .2s"}}>
-              <span style={{fontSize:16}}>{t.icon}</span>
-              <span style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.05em"}}>{t.label}</span>
-            </button>
-          ))}
+          {PRIMARY_TAB_KEYS.map(k=>{
+            const t = TABS.find(x=>x.key===k);
+            return (
+              <button key={t.key} onClick={()=>setTab(t.key)}
+                style={{flex:1,padding:"6px 2px 2px",border:"none",background:"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,color:tab===t.key?"var(--gold)":"var(--txd)",transition:"color .2s"}}>
+                <span style={{fontSize:18}}>{t.icon}</span>
+                <span style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.02em"}}>{t.label}</span>
+              </button>
+            );
+          })}
+          {/* "Daha" — kalan sekmeler için paneli açar; aktif sekme birincil değilse vurgulanır */}
+          <button onClick={()=>setMobOpen(true)}
+            style={{flex:1,padding:"6px 2px 2px",border:"none",background:"transparent",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,color:PRIMARY_TAB_KEYS.includes(tab)?"var(--txd)":"var(--gold)",transition:"color .2s"}}>
+            <span style={{fontSize:18}}>⋯</span>
+            <span style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.02em"}}>Daha</span>
+          </button>
         </nav>
       </div>
     </>
