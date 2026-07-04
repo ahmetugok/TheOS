@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { store } from './lib/supabase';
 import { computeStreak, mapChainBreakerBackup } from './breaker/breakerData.js';
+import { CHALLENGES_DB } from './breaker/challenges.js';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
@@ -11,6 +12,7 @@ const SUBS = [
   { key: 'today', label: 'Bugün' },
   { key: 'calendar', label: 'Takvim' },
   { key: 'stats', label: 'İstatistik' },
+  { key: 'forge', label: 'Forge' },
 ];
 const TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 const TR_DOW = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
@@ -76,6 +78,7 @@ const S = {
 export default function Breaker({ setXp }) {
   const [chains, setChains] = useState([]);
   const [logs, setLogs] = useState({});
+  const [forge, setForge] = useState({});
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState('today');
   const [adding, setAdding] = useState(false);
@@ -90,8 +93,10 @@ export default function Breaker({ setXp }) {
     (async () => {
       const c = await store.get('theos_breaker_chains');
       const l = await store.get('theos_breaker_logs');
+      const f = await store.get('theos_breaker_forge');
       if (Array.isArray(c)) setChains(c);
       if (l && typeof l === 'object') setLogs(l);
+      if (f && typeof f === 'object') setForge(f);
       setLoaded(true);
     })();
   }, []);
@@ -103,9 +108,10 @@ export default function Breaker({ setXp }) {
     saveT.current = setTimeout(() => {
       store.set('theos_breaker_chains', chains);
       store.set('theos_breaker_logs', logs);
+      store.set('theos_breaker_forge', forge);
     }, 700);
     return () => clearTimeout(saveT.current);
-  }, [chains, logs, loaded]);
+  }, [chains, logs, forge, loaded]);
 
   const patchToday = (patch) =>
     setLogs(prev => ({ ...prev, [today]: { ...(prev[today] || {}), ...patch } }));
@@ -122,6 +128,23 @@ export default function Breaker({ setXp }) {
   };
 
   const removeChain = (id) => setChains(prev => prev.filter(c => c.id !== id));
+
+  const startChallenge = (id) => {
+    setForge(prev => prev[id] ? prev : { ...prev, [id]: { startDate: today, checkins: {} } });
+  };
+  const abandonChallenge = (id) => {
+    setForge(prev => { const next = { ...prev }; delete next[id]; return next; });
+  };
+  const checkInChallenge = (id) => {
+    let gained = false;
+    setForge(prev => {
+      const cur = prev[id];
+      if (!cur || cur.checkins[today]) return prev;
+      gained = true;
+      return { ...prev, [id]: { ...cur, checkins: { ...cur.checkins, [today]: true } } };
+    });
+    if (gained) setXp(x => x + 50);
+  };
 
   const fileRef = useRef(null);
   const exportData = () => {
@@ -197,6 +220,10 @@ export default function Breaker({ setXp }) {
       )}
       {view === 'calendar' && <CalendarView chains={chains} logs={logs} today={today} />}
       {view === 'stats' && <StatsView chains={chains} logs={logs} today={today} />}
+      {view === 'forge' && (
+        <ForgeView forge={forge} today={today}
+          onStart={startChallenge} onAbandon={abandonChallenge} onCheckIn={checkInChallenge} />
+      )}
 
       {/* Veri yedekleme */}
       <div style={{ display: 'flex', gap: 8, borderTop: '1px solid var(--b)', paddingTop: 16 }}>
@@ -453,6 +480,81 @@ function StatsView({ chains, logs, today }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function ForgeView({ forge, today, onStart, onAbandon, onCheckIn }) {
+  const active = CHALLENGES_DB.filter(c => forge[c.id]);
+  const inactive = CHALLENGES_DB.filter(c => !forge[c.id]);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {active.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={S.label}>Aktif meydan okumalar</div>
+          {active.map(c => {
+            const state = forge[c.id];
+            const doneCount = Object.keys(state.checkins).length;
+            const pct = Math.min(100, Math.round((doneCount / c.duration) * 100));
+            const checkedToday = !!state.checkins[today];
+            return (
+              <div key={c.id} style={{ ...S.card, borderLeft: `3px solid ${c.color}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: 20 }}>{c.emoji}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: 'var(--fm)', fontSize: 14, color: 'var(--tx)' }}>{c.title}</div>
+                    <div style={{ fontFamily: 'var(--fm)', fontSize: 11, color: 'var(--txd)' }}>
+                      {doneCount}/{c.duration} gün · %{pct}{c.isStrict ? ' · katı' : ''}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: 'var(--s3)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: c.color, transition: 'width .3s' }} />
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => onCheckIn(c.id)} disabled={checkedToday}
+                    style={{
+                      ...S.primaryBtn, flex: 1, fontSize: 13,
+                      background: checkedToday ? 'var(--s3)' : c.color,
+                      color: checkedToday ? 'var(--txd)' : '#0a0a0b',
+                      cursor: checkedToday ? 'default' : 'pointer',
+                    }}>
+                    {checkedToday ? '✓ Bugün tamam' : 'Bugünü işaretle'}
+                  </button>
+                  <button onClick={() => onAbandon(c.id)}
+                    style={{ ...S.primaryBtn, background: 'transparent', color: 'var(--txd)', border: '1px solid var(--b)', fontSize: 12 }}>
+                    Bırak
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={S.label}>Meydan okumalar</div>
+        {inactive.map(c => (
+          <div key={c.id} style={{ ...S.card, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 20 }}>{c.emoji}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: 'var(--fm)', fontSize: 14, color: 'var(--tx)' }}>{c.title}</div>
+                <div style={{ fontFamily: 'var(--fm)', fontSize: 11, color: 'var(--txd)' }}>
+                  {c.duration} gün{c.isStrict ? ' · katı (kaçırırsan baştan)' : ''}
+                </div>
+              </div>
+            </div>
+            <div style={{ fontFamily: 'var(--fm)', fontSize: 12, color: 'var(--txm)', lineHeight: 1.5 }}>
+              {c.description}
+            </div>
+            <button onClick={() => onStart(c.id)}
+              style={{ ...S.primaryBtn, alignSelf: 'flex-start', background: c.color, fontSize: 12 }}>
+              Başlat
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
