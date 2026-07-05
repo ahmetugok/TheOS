@@ -4,7 +4,7 @@
 //  Faz 1 (Identity) + 2 (Daily) + 3 (Journal) + 4 (Progress)
 // ═══════════════════════════════════════════════════════
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { store, signOut } from "./src/lib/supabase";
 import Breaker from "./src/Breaker.jsx";
@@ -35,6 +35,7 @@ const G = () => (
       --zinc-600:#706b65;--zinc-500:#8a857f;--zinc-400:#a09890;
       --zinc-300:#bab4ac;--zinc-200:#e8e3da;
       --nav-bg:rgba(8,8,9,.94);--overlay-bg:rgba(4,4,5,.7);
+      --line:rgba(255,255,255,.022);
     }
     html[data-theme="light"]{
       --bg:#f5f2ec;--s1:#ede9e0;--s2:#e6e0d4;--s3:#ddd7c8;
@@ -53,6 +54,7 @@ const G = () => (
       --zinc-600:#9a9080;--zinc-500:#706b65;--zinc-400:#4a4540;
       --zinc-300:#2a2520;--zinc-200:#1a1814;
       --nav-bg:rgba(245,242,236,.94);--overlay-bg:rgba(200,195,185,.7);
+      --line:rgba(0,0,0,.05);
     }
     body{background:var(--bg);color:var(--tx);font-family:var(--fb);-webkit-text-size-adjust:100%;}
     input,textarea{font-family:var(--fb);background:transparent;border:none;outline:none;color:var(--tx);resize:none;font-size:16px;line-height:1.7;}
@@ -183,7 +185,7 @@ const Card = ({ children, accent, style = {} }) => {
 const Divider = ({ label }) => (
   <div style={{ display:"flex", alignItems:"center", gap:10, margin:"4px 0" }}>
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
-    {label && <span style={{ fontSize:9, letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--txd)", fontFamily:"var(--fm)" }}>{label}</span>}
+    {label && <span style={{ fontSize:10, letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--txd)", fontFamily:"var(--fm)" }}>{label}</span>}
     <div style={{ flex:1, height:1, background:"var(--b)" }} />
   </div>
 );
@@ -231,6 +233,13 @@ const WEEKLY_PROMPTS = [
   {key:"didnt",     label:"Ne İşe Yaramadı?",           hint:"Ne seni yavaşlattı veya boşa harcandı?",               color:"var(--rose)"},
   {key:"learned",   label:"Ne Öğrendim?",               hint:"Bir içgörü, bir şaşırma, bir gerçek fark etme.",        color:"var(--amber)"},
   {key:"nextfocus", label:"Gelecek Haftanın Tek Odağı", hint:"Tek şey. En önemliyi yaz.",                            color:"var(--slate)"},
+];
+// Metacognition haftalık soruları — aynı haftalık review kaydında saklanır
+const META_PROMPTS = [
+  {key:"metaR1", label:"Öne Çıkan Düşünce Kalıbı",     hint:"Bu hafta hangi düşünce kalıbı en çok öne çıktı?",        color:"var(--violet)"},
+  {key:"metaR2", label:"Otopilottan Uyanış Anı",       hint:"Bir olayda otopilottaydın; fark ettiğin an ne oldu?",     color:"var(--blue)"},
+  {key:"metaR3", label:"Tekrarlayan Çarpıtma",         hint:"Hangi çarpıtmayı tekrarlıyorsun? Kökeninde ne olabilir?", color:"var(--red)"},
+  {key:"metaR4", label:"Gelecek Haftanın Bilinç Alanı",hint:"Daha bilinçli olmak istediğin alan nedir?",               color:"var(--gold)"},
 ];
 const PRESETS = [{label:"25 dk",sec:25*60},{label:"50 dk",sec:50*60},{label:"90 dk",sec:90*60}];
 
@@ -385,7 +394,7 @@ function MorningStack({ items, done, onToggle }) {
             <div key={item.id} onClick={()=>onToggle(item.id)}
               style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",borderRadius:10,cursor:"pointer",background:d?"rgba(200,150,74,.05)":"var(--s2)",border:`1px solid ${d?"rgba(200,150,74,.15)":"var(--b)"}`,transition:"all .2s"}}>
               <div style={{width:17,height:17,borderRadius:4,flexShrink:0,border:`1.5px solid ${d?"var(--amber)":"var(--txd)"}`,background:d?"var(--amber)":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}>
-                {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#080809" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" style={{stroke:"var(--bg)"}} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
               <span style={{fontSize:13,flex:1,color:d?"var(--txm)":"var(--tx)",textDecoration:d?"line-through":"none",textDecorationColor:"var(--txd)"}}>{item.text}</span>
             </div>
@@ -431,7 +440,7 @@ function HabitTracker({ habits, done, onToggle }) {
 }
 
 /* Deep Work Timer */
-function DeepWorkTimer({ onSession, xp, setXp, sessions, setSessions }) {
+function DeepWorkTimer({ setXp, sessions, setSessions }) {
   const [preset, setPreset]       = useState(PRESETS[0]);
   const [secs, setSecs]           = useState(PRESETS[0].sec);
   const [running, setRunning]     = useState(false);
@@ -456,31 +465,47 @@ function DeepWorkTimer({ onSession, xp, setXp, sessions, setSessions }) {
   const C = 2 * Math.PI * R;
   const offset = C * (1 - progress);
 
+  const endRef = useRef(null);
   const showToast = (msg) => { setToast(msg); setTimeout(()=>setToast(null),2500); };
   const enterFocus = () => { if(!running) start(); setFocusMode(true); };
-  const start = () => setRunning(true);
+  const start = () => {
+    if(typeof Notification!=="undefined" && Notification.permission==="default") Notification.requestPermission().catch(()=>{});
+    setRunning(true);
+  };
   const pause = () => setRunning(false);
   const reset = () => { setRunning(false); setSecs(preset.sec); totalRef.current = preset.sec; };
   const pick  = (p) => { setRunning(false); setPreset(p); setSecs(p.sec); totalRef.current = p.sec; };
 
+  // Zaman damgası tabanlı sayaç: telefon kilitlense / sekme arka plana düşse de
+  // kalan süre Date.now() üzerinden doğru hesaplanır, interval kısılması sayacı bozmaz.
   useEffect(()=>{
     if(running){
-      iRef.current = setInterval(()=>{
-        setSecs(s=>{
-          if(s<=1){
-            clearInterval(iRef.current); setRunning(false);
-            const gained = 50;
-            setXp(x=>x+gained);
-            setSessions(n=>n+1);
-            onSession?.();
-            setFocusMode(false);
-            showToast(`✓ Seans tamamlandı! +${gained} XP`);
-            return totalRef.current;
-          }
-          return s-1;
-        });
-      },1000);
-    } else clearInterval(iRef.current);
+      if(endRef.current==null) endRef.current = Date.now() + secs*1000;
+      const tick = () => {
+        if(endRef.current==null) return;
+        const rem = Math.max(0, Math.ceil((endRef.current - Date.now())/1000));
+        if(rem<=0){
+          clearInterval(iRef.current);
+          endRef.current = null;
+          setRunning(false);
+          setXp(x=>x+50);
+          setSessions(n=>n+1);
+          setFocusMode(false);
+          showToast("✓ Seans tamamlandı! +50 XP");
+          try{ navigator.vibrate?.([200,100,200]); }catch{ /* desteklenmiyor */ }
+          if(typeof Notification!=="undefined" && Notification.permission==="granted")
+            new Notification("The OS", { body:"Derin odak seansı tamamlandı. +50 XP" });
+          setSecs(totalRef.current);
+          return;
+        }
+        setSecs(rem);
+      };
+      iRef.current = setInterval(tick, 500);
+      document.addEventListener("visibilitychange", tick);
+      return ()=>{ clearInterval(iRef.current); document.removeEventListener("visibilitychange", tick); };
+    }
+    endRef.current = null;
+    clearInterval(iRef.current);
     return ()=>clearInterval(iRef.current);
   },[running]);
 
@@ -581,7 +606,7 @@ function DayScore({ morning, mDone, habits, hDone, streak, sessions }) {
   return (
     <div style={{background:"var(--s1)",border:`1px solid ${overall>=80?"var(--gold-m)":"var(--b)"}`,borderRadius:16,padding:"20px 24px",display:"flex",alignItems:"center",gap:24,flexWrap:"wrap",transition:"border-color .3s"}}>
       <div style={{flex:1,minWidth:100}}>
-        <p style={{fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:4}}>Günün Skoru</p>
+        <p style={{fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:4}}>Günün Skoru</p>
         <div style={{display:"flex",alignItems:"baseline",gap:4}}>
           <span style={{fontFamily:"var(--fd)",fontSize:38,fontWeight:600,color:scoreColor}}>{overall}</span>
           <span style={{fontSize:13,color:"var(--txd)"}}>/ 100</span>
@@ -596,7 +621,7 @@ function DayScore({ morning, mDone, habits, hDone, streak, sessions }) {
           {label:"🔥 Seri",  val:`${streak} gün`,                                               c:"var(--gold)"},
         ].map(s=>(
           <div key={s.label}>
-            <p style={{fontSize:9,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:3}}>{s.label}</p>
+            <p style={{fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:3}}>{s.label}</p>
             <p style={{fontFamily:"var(--fm)",fontSize:17,color:s.c}}>{s.val}</p>
           </div>
         ))}
@@ -643,7 +668,7 @@ function DailyOS({ morningItems, morningDone, onToggleMorning, habits, habitsDon
         </div>
         <div className="right-sticky" style={{display:"flex",flexDirection:"column",gap:18,position:"sticky",top:74}}>
           <div className="fu1">
-            <DeepWorkTimer onSession={()=>setSessions(s=>s+1)} xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions} project={focusText} setProject={setFocusText}/>
+            <DeepWorkTimer xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions}/>
           </div>
           <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"20px 22px"}}>
             <p style={{fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",color:"var(--txm)",fontFamily:"var(--fm)",marginBottom:10}}>Bugünün Tek Odağı</p>
@@ -699,8 +724,6 @@ function AutopilotBreaker() {
     setSaving(false); setSavedMsg(true); setTimeout(()=>setSavedMsg(false),1800);
   };
 
-  // Görüntülenen cevap: bugün → local state, geçmiş → store
-  const displayAnswer = isToday ? (answers[q.id]||savedQs[q.id]||"") : (savedQs[q.id]||"");
   const answeredCount = Object.keys(savedQs).length;
 
   return (
@@ -726,7 +749,7 @@ function AutopilotBreaker() {
       <div className="fu1" style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:20}}>
         {AUTOPILOT_QS.map((qs,i)=>{
           const hasAnswer = !!savedQs[qs.id];
-          return <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"7px 12px",borderRadius:16,border:`1px solid ${i===idx?qs.color:hasAnswer?"rgba(255,255,255,.12)":"var(--b)"}`,background:i===idx?qs.bg:hasAnswer?"rgba(255,255,255,.04)":"transparent",color:i===idx?qs.color:hasAnswer?"var(--txm)":"var(--txd)",cursor:"pointer",transition:"all .2s",position:"relative"}}>
+          return <button key={qs.id} onClick={()=>goTo(i)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"7px 12px",borderRadius:16,border:`1px solid ${i===idx?qs.color:hasAnswer?"var(--bh)":"var(--b)"}`,background:i===idx?qs.bg:hasAnswer?"var(--s2)":"transparent",color:i===idx?qs.color:hasAnswer?"var(--txm)":"var(--txd)",cursor:"pointer",transition:"all .2s",position:"relative"}}>
             {i+1}{hasAnswer&&<span style={{position:"absolute",top:-3,right:-3,width:6,height:6,borderRadius:"50%",background:qs.color}}/>}
           </button>;
         })}
@@ -812,7 +835,7 @@ function BrainDump() {
             <div style={{width:5,height:5,borderRadius:"50%",background:saving?"var(--amber)":"var(--green)",animation:saving?"pulse 1s infinite":"none",transition:"background .3s"}}/>
           </div>
         </div>
-        <div style={{padding:"24px 28px",backgroundImage:isEditable?"repeating-linear-gradient(transparent,transparent 31px,rgba(255,255,255,.022) 31px,rgba(255,255,255,.022) 32px)":"none",backgroundSize:"100% 32px",backgroundPositionY:"24px"}}>
+        <div style={{padding:"24px 28px",backgroundImage:isEditable?"repeating-linear-gradient(transparent,transparent 31px,var(--line) 31px,var(--line) 32px)":"none",backgroundSize:"100% 32px",backgroundPositionY:"24px"}}>
           <textarea value={text} onChange={e=>handleChange(e.target.value)} readOnly={!isEditable}
             placeholder={isEditable?"Aklındaki her şeyi buraya dök.\n\nNe düşünüyorsun? Ne hissediyorsun? Neyi çözmek istiyorsun?\nFiltre yok. Sadece yaz.":"(geçmiş kayıt — salt okunur)"}
             rows={16} style={{width:"100%",fontSize:15,lineHeight:"32px",letterSpacing:"0.01em",color:isEditable?"var(--tx)":"var(--txm)"}}/>
@@ -840,7 +863,21 @@ function WeeklyReview() {
   const isCurrentWeek = selectedWk === weekKeys[0];
 
   useEffect(()=>{
-    (async()=>{ const d=await store.get(`theos_review_${selectedWk}`); setReview(d||{}); })();
+    (async()=>{
+      const d = await store.get(`theos_review_${selectedWk}`) || {};
+      // Eski Metacognition review kayıtlarını (localStorage, gün bazlı) tek seferlik bu haftaya taşı
+      if(selectedWk===weekKey()){
+        let changed=false;
+        META_PROMPTS.forEach(p=>{
+          if(d[p.key]) return;
+          const keys=Object.keys(localStorage).filter(k=>k.startsWith("os_meta_review_")&&k.endsWith(`_${p.key}`)).sort();
+          const v=keys.length?localStorage.getItem(keys[keys.length-1]):null;
+          if(v){ d[p.key]=v; changed=true; }
+        });
+        if(changed) await store.set(`theos_review_${selectedWk}`,d);
+      }
+      setReview(d);
+    })();
   },[selectedWk]);
 
   const handleChange = (key, val) => {
@@ -859,6 +896,28 @@ function WeeklyReview() {
     return `${f(mon)} – ${f(sun)}`;
   };
   const done = WEEKLY_PROMPTS.filter(p=>(review[p.key]||"").trim().length>20).length;
+
+  const promptCard = (p,i) => {
+    const val=review[p.key]||"";
+    const filled=val.trim().length>20;
+    return (
+      <div key={p.key} className={`fu${Math.min(i+1,3)}`} style={{background:"var(--s1)",border:`1px solid ${filled?`${p.color}25`:"var(--b)"}`,borderRadius:14,overflow:"hidden",transition:"border-color .3s"}}>
+        <div style={{display:"flex"}}>
+          <div style={{width:3,flexShrink:0,background:filled?p.color:"var(--b)",transition:"background .3s"}}/>
+          <div style={{flex:1,padding:"18px 20px"}}>
+            <FieldLabel color={filled?p.color:"var(--txd)"}>{p.label}</FieldLabel>
+            <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:12}}>{p.hint}</p>
+            <textarea value={val} onChange={e=>handleChange(p.key,e.target.value)}
+              readOnly={!isEditable}
+              placeholder={isEditable?"Yaz...":"(bu haftada kayıt yok)"}
+              rows={p.key==="nextfocus"?2:3}
+              style={{width:"100%",fontSize:14,lineHeight:1.75,color:isCurrentWeek?"var(--tx)":"var(--txm)"}}/>
+            {wc(val)>0&&<p style={{fontSize:10,color:wc(val)>10?p.color:"var(--txd)",fontFamily:"var(--fm)",marginTop:5,textAlign:"right"}}>{wc(val)} kelime</p>}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div style={{maxWidth:640,margin:"0 auto"}}>
@@ -890,7 +949,7 @@ function WeeklyReview() {
       </div>
 
       {!isEditable&&(
-        <div className="fu1" style={{marginBottom:16,padding:"10px 16px",background:"rgba(255,255,255,.03)",border:"1px solid var(--b)",borderRadius:10}}>
+        <div className="fu1" style={{marginBottom:16,padding:"10px 16px",background:"var(--s1)",border:"1px solid var(--b)",borderRadius:10}}>
           <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic"}}>📖 Geçmiş hafta — salt okunur</p>
         </div>
       )}
@@ -901,27 +960,11 @@ function WeeklyReview() {
       </div>
 
       <div style={{display:"flex",flexDirection:"column",gap:14}}>
-        {WEEKLY_PROMPTS.map((p,i)=>{
-          const val=review[p.key]||"";
-          const filled=val.trim().length>20;
-          return (
-            <div key={p.key} className={`fu${Math.min(i+1,3)}`} style={{background:"var(--s1)",border:`1px solid ${filled?`${p.color}25`:"var(--b)"}`,borderRadius:14,overflow:"hidden",transition:"border-color .3s"}}>
-              <div style={{display:"flex"}}>
-                <div style={{width:3,flexShrink:0,background:filled?p.color:"var(--b)",transition:"background .3s"}}/>
-                <div style={{flex:1,padding:"18px 20px"}}>
-                  <FieldLabel color={filled?p.color:"var(--txd)"}>{p.label}</FieldLabel>
-                  <p style={{fontSize:12,color:"var(--txd)",fontStyle:"italic",lineHeight:1.6,marginBottom:12}}>{p.hint}</p>
-                  <textarea value={val} onChange={e=>handleChange(p.key,e.target.value)}
-                    readOnly={!isEditable}
-                    placeholder={isEditable?"Yaz...":"(bu haftada kayıt yok)"}
-                    rows={p.key==="nextfocus"?2:3}
-                    style={{width:"100%",fontSize:14,lineHeight:1.75,color:isCurrentWeek?"var(--tx)":"var(--txm)"}}/>
-                  {wc(val)>0&&<p style={{fontSize:10,color:wc(val)>10?p.color:"var(--txd)",fontFamily:"var(--fm)",marginTop:5,textAlign:"right"}}>{wc(val)} kelime</p>}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {WEEKLY_PROMPTS.map(promptCard)}
+      </div>
+      <div style={{margin:"26px 0 14px"}}><Divider label="Metacognition"/></div>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>
+        {META_PROMPTS.map(promptCard)}
       </div>
       {isEditable&&done===4&&<div className="fi" style={{marginTop:20,padding:"16px 20px",background:"var(--green-s)",border:"1px solid rgba(58,148,105,.2)",borderRadius:12,textAlign:"center"}}>
         <p style={{fontFamily:"var(--fd)",fontSize:17,fontStyle:"italic",color:"var(--green)"}}>Bu haftanın review'u tamamlandı.</p>
@@ -934,7 +977,7 @@ function WeeklyReview() {
 const JOURNAL_TABS = [
   {key:"autopilot",label:"Otopilot Kırıcı",color:"var(--rose)"},
   {key:"dump",     label:"Brain Dump",      color:"var(--amber)"},
-  {key:"review",   label:"Haftalık Review", color:"var(--sage)"},
+  {key:"metac",    label:"Metacognition",   color:"var(--violet)"},
 ];
 
 function MindJournal() {
@@ -948,7 +991,243 @@ function MindJournal() {
       </div>
       {sub==="autopilot"&&<AutopilotBreaker/>}
       {sub==="dump"&&<BrainDump/>}
-      {sub==="review"&&<WeeklyReview/>}
+      {sub==="metac"&&<Metacognition/>}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════
+//  METACOGNITION (Mind Journal alt sekmesi)
+// ════════════════════════════════════════════════════════
+const OLAY_TIPLERI = [
+  { id: 'duygusal', label: 'Duygusal Tepki',  icon: '⚡' },
+  { id: 'hedef',    label: 'Hedef Sapması',   icon: '🎯' },
+  { id: 'karar',    label: 'Karar Anı',       icon: '⚖️' },
+  { id: 'davranis', label: 'Davranış Kalıbı', icon: '🔄' },
+];
+const CARPITMALAR = [
+  'Felaketleştirme',
+  'Siyah-beyaz düşünce',
+  'Zihin okuma',
+  'Aşırı genelleme',
+  'Duygusal muhakeme',
+  '"Yapmalıyım" tuzağı',
+  'Kişiselleştirme',
+  'Küçümseme',
+  'Filtreleme',
+];
+const METAC_VIEWS = [
+  {id:'kayit',  label:'Olay Kaydı'},
+  {id:'checkin',label:'Check-in'},
+  {id:'oruntu', label:'Örüntüler'},
+];
+
+function Metacognition(){
+  const [view, setView]         = useState('kayit');
+  const [events, setEvents]     = useState([]);
+  const [checkIns, setCheckIns] = useState([]);
+  const [form, setForm]         = useState({type:'',olay:'',dusunce:'',carpitmalar:[],cerceve:'',yogunluk:3});
+  const [ciForm, setCiForm]     = useState({his:'',engel:'',adim:''});
+  const [savedMsg, setSavedMsg] = useState(null);
+
+  useEffect(()=>{(async()=>{
+    const me = await store.get('metac_events'); if(Array.isArray(me)) setEvents(me);
+    const ci = await store.get('checkins');     if(Array.isArray(ci)) setCheckIns(ci);
+  })();},[]);
+
+  const flash = (k) => { setSavedMsg(k); setTimeout(()=>setSavedMsg(null),2200); };
+  const eventValid = form.type && form.olay.trim() && form.dusunce.trim();
+
+  const saveEvent = () => {
+    if(!eventValid) return;
+    const updated = [{id:Date.now(),date:new Date().toISOString(),...form}, ...events];
+    setEvents(updated); store.set('metac_events',updated);
+    setForm({type:'',olay:'',dusunce:'',carpitmalar:[],cerceve:'',yogunluk:3});
+    flash('event');
+  };
+  const saveCheckIn = () => {
+    if(!ciForm.his.trim()) return;
+    const updated = [{id:Date.now(),date:new Date().toISOString(),...ciForm}, ...checkIns];
+    setCheckIns(updated); store.set('checkins',updated);
+    setCiForm({his:'',engel:'',adim:''});
+    flash('ci');
+  };
+
+  const carpStats = (()=>{ const c={}; events.forEach(e=>e.carpitmalar?.forEach(x=>{c[x]=(c[x]||0)+1;})); return Object.entries(c).sort((a,b)=>b[1]-a[1]); })();
+  const tipStats  = (()=>{ const c={duygusal:0,hedef:0,karar:0,davranis:0}; events.forEach(e=>{ if(c[e.type]!==undefined)c[e.type]++; }); return c; })();
+  const last7 = Array.from({length:7},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-(6-i));
+    const key=d.toISOString().slice(0,10);
+    return { key, label:d.toLocaleDateString('tr-TR',{weekday:'short'}), ci:checkIns.find(c=>c.date.startsWith(key)) };
+  });
+  const fmtStamp = (iso)=>new Date(iso).toLocaleDateString('tr-TR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+
+  return (
+    <div style={{maxWidth:640,margin:"0 auto"}}>
+      <div className="fu" style={{marginBottom:20}}>
+        <div style={{display:"flex",alignItems:"baseline",gap:14,marginBottom:8}}>
+          <h2 style={{fontFamily:"var(--fd)",fontSize:28,fontWeight:400,fontStyle:"italic",color:"var(--tx)"}}>Metacognition</h2>
+          <span className="ink" style={{flex:1,marginBottom:5}}/>
+        </div>
+        <p style={{fontSize:13,color:"var(--txd)",fontStyle:"italic",lineHeight:1.7}}>Düşünceni gözlemle. Kalıpları gör. Yeniden çerçevele.</p>
+      </div>
+
+      <div className="fu1" style={{display:"flex",gap:6,marginBottom:20,flexWrap:"wrap"}}>
+        {METAC_VIEWS.map(v=>(
+          <button key={v.id} onClick={()=>setView(v.id)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"6px 14px",borderRadius:14,border:`1px solid ${view===v.id?"var(--violet)":"var(--b)"}`,background:view===v.id?"var(--violet-s)":"transparent",color:view===v.id?"var(--violet)":"var(--txd)",cursor:"pointer",transition:"all .2s"}}>{v.label}</button>
+        ))}
+      </div>
+
+      {view==='kayit'&&(
+        <div className="fu2" style={{display:"flex",flexDirection:"column",gap:16}}>
+          <Card accent="violet">
+            <FieldLabel color="var(--violet)">Yeni Olay Kaydı</FieldLabel>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>
+              {OLAY_TIPLERI.map(t=>(
+                <button key={t.id} onClick={()=>setForm(f=>({...f,type:t.id}))} style={{fontFamily:"var(--fb)",fontSize:12,padding:"6px 12px",borderRadius:8,border:`1px solid ${form.type===t.id?"var(--violet)":"var(--b)"}`,background:form.type===t.id?"var(--violet-s)":"transparent",color:form.type===t.id?"var(--violet)":"var(--txm)",cursor:"pointer",transition:"all .2s"}}>{t.icon} {t.label}</button>
+              ))}
+            </div>
+            <FieldLabel>Ne oldu?</FieldLabel>
+            <textarea value={form.olay} onChange={e=>setForm(f=>({...f,olay:e.target.value}))} placeholder="Durumu kısaca anlat..." rows={2} style={{width:"100%",fontSize:14,lineHeight:1.7,marginBottom:14}}/>
+            <FieldLabel>İlk düşüncem / tepkim</FieldLabel>
+            <textarea value={form.dusunce} onChange={e=>setForm(f=>({...f,dusunce:e.target.value}))} placeholder="Aklından geçenleri yaz..." rows={2} style={{width:"100%",fontSize:14,lineHeight:1.7,marginBottom:14}}/>
+            <FieldLabel>Bilişsel çarpıtma var mı?</FieldLabel>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
+              {CARPITMALAR.map(c=>{
+                const sel=form.carpitmalar.includes(c);
+                return <button key={c} onClick={()=>setForm(f=>({...f,carpitmalar:sel?f.carpitmalar.filter(x=>x!==c):[...f.carpitmalar,c]}))} style={{fontFamily:"var(--fb)",fontSize:11,padding:"4px 11px",borderRadius:12,border:`1px solid ${sel?"var(--red)":"var(--b)"}`,background:sel?"var(--red-s)":"transparent",color:sel?"var(--red)":"var(--txd)",cursor:"pointer",transition:"all .2s"}}>{c}</button>;
+              })}
+            </div>
+            <FieldLabel>Duygusal yoğunluk: {form.yogunluk}/5</FieldLabel>
+            <input type="range" min={1} max={5} value={form.yogunluk} onChange={e=>setForm(f=>({...f,yogunluk:Number(e.target.value)}))} style={{width:"100%",accentColor:"var(--violet)",marginBottom:16}}/>
+            <FieldLabel>Daha dengeli bir bakış ne olurdu?</FieldLabel>
+            <textarea value={form.cerceve} onChange={e=>setForm(f=>({...f,cerceve:e.target.value}))} placeholder="Alternatif perspektif..." rows={2} style={{width:"100%",fontSize:14,lineHeight:1.7,marginBottom:16}}/>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <button onClick={saveEvent} disabled={!eventValid} style={{padding:"10px 26px",borderRadius:10,border:"none",cursor:eventValid?"pointer":"default",background:"var(--gold)",color:"var(--bg)",fontSize:13,fontWeight:600,fontFamily:"var(--fb)",opacity:eventValid?1:.45}}>Kaydet</button>
+              {savedMsg==='event'&&<span style={{fontSize:12,color:"var(--green)",fontFamily:"var(--fm)"}}>✓ kaydedildi</span>}
+            </div>
+          </Card>
+
+          {events.length>0&&(
+            <div>
+              <FieldLabel>Son Olaylar</FieldLabel>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {events.slice(0,5).map(ev=>{
+                  const tip=OLAY_TIPLERI.find(t=>t.id===ev.type);
+                  return (
+                    <div key={ev.id} style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:12,padding:"14px 16px"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>
+                        <span style={{fontSize:12,color:"var(--violet)",fontFamily:"var(--fb)"}}>{tip?.icon} {tip?.label}</span>
+                        <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>{fmtStamp(ev.date)}</span>
+                      </div>
+                      <p style={{fontSize:13,color:"var(--tx)",lineHeight:1.6}}>{ev.olay}</p>
+                      {ev.carpitmalar?.length>0&&(
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap",marginTop:8}}>
+                          {ev.carpitmalar.map(c=><span key={c} style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:"var(--red-s)",border:"1px solid rgba(184,50,50,.25)",color:"var(--red)"}}>{c}</span>)}
+                        </div>
+                      )}
+                      {ev.cerceve&&<p style={{fontSize:12,color:"var(--green)",marginTop:8,borderLeft:"2px solid var(--green)",paddingLeft:8,lineHeight:1.6}}>{ev.cerceve}</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {view==='checkin'&&(
+        <div className="fu2" style={{display:"flex",flexDirection:"column",gap:16}}>
+          <div style={{display:"flex",gap:6}}>
+            {last7.map(d=>(
+              <div key={d.key} style={{flex:1,textAlign:"center"}}>
+                <div style={{width:"100%",aspectRatio:"1",borderRadius:8,background:d.ci?"var(--gold-s)":"var(--s2)",border:`1px solid ${d.ci?"var(--gold-m)":"var(--b)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:d.ci?"var(--gold)":"var(--txd)",marginBottom:4}}>{d.ci?"✓":"·"}</div>
+                <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>{d.label}</span>
+              </div>
+            ))}
+          </div>
+          <Card accent="violet">
+            <FieldLabel color="var(--violet)">{new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})} Check-in</FieldLabel>
+            {[
+              {key:'his',  label:'Şu an nasıl hissediyorsun?',    ph:'Düşünce, his, enerji seviyesi...'},
+              {key:'engel',label:'Seni durduran bir şey var mı?', ph:'Bir korku, şüphe, erteleme...'},
+              {key:'adim', label:'Bir sonraki küçük adım ne?',    ph:'Somut, yapılabilir bir şey...'},
+            ].map(q=>(
+              <div key={q.key} style={{marginBottom:14}}>
+                <FieldLabel>{q.label}</FieldLabel>
+                <textarea value={ciForm[q.key]} onChange={e=>setCiForm(f=>({...f,[q.key]:e.target.value}))} placeholder={q.ph} rows={2} style={{width:"100%",fontSize:14,lineHeight:1.7}}/>
+              </div>
+            ))}
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <button onClick={saveCheckIn} disabled={!ciForm.his.trim()} style={{padding:"10px 26px",borderRadius:10,border:"none",cursor:ciForm.his.trim()?"pointer":"default",background:"var(--gold)",color:"var(--bg)",fontSize:13,fontWeight:600,fontFamily:"var(--fb)",opacity:ciForm.his.trim()?1:.45}}>Check-in Yap</button>
+              {savedMsg==='ci'&&<span style={{fontSize:12,color:"var(--green)",fontFamily:"var(--fm)"}}>✓ kaydedildi</span>}
+            </div>
+          </Card>
+          {checkIns.slice(0,3).map(ci=>(
+            <div key={ci.id} style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:12,padding:"14px 16px"}}>
+              <p style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",marginBottom:7}}>{fmtStamp(ci.date)}</p>
+              <p style={{fontSize:13,color:"var(--tx)",marginBottom:4,lineHeight:1.6}}>💭 {ci.his}</p>
+              {ci.engel&&<p style={{fontSize:12,color:"var(--txm)",marginBottom:4,lineHeight:1.6}}>🧱 {ci.engel}</p>}
+              {ci.adim&&<p style={{fontSize:12,color:"var(--green)",lineHeight:1.6}}>→ {ci.adim}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {view==='oruntu'&&(
+        events.length===0
+          ? <p className="fu2" style={{fontSize:13,color:"var(--txd)",textAlign:"center",padding:"48px 0",fontStyle:"italic"}}>Henüz kaydedilen olay yok. Olay Kaydı bölümünden başla.</p>
+          : (
+          <div className="fu2" style={{display:"flex",flexDirection:"column",gap:16}}>
+            <div className="log-summary-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+              {[
+                {label:"Toplam Olay",     val:events.length},
+                {label:"Check-in",        val:checkIns.length},
+                {label:"En Çok Çarpıtma", val:carpStats[0]?.[0]?.split(' ')[0]||"yok"},
+                {label:"Ort. Yoğunluk",   val:events.length?(events.reduce((a,e)=>a+(e.yogunluk||3),0)/events.length).toFixed(1):"0"},
+              ].map(s=>(
+                <div key={s.label} style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:12,padding:"14px 12px",textAlign:"center"}}>
+                  <p style={{fontFamily:"var(--fd)",fontSize:22,fontWeight:600,color:"var(--violet)",marginBottom:3}}>{s.val}</p>
+                  <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--txd)"}}>{s.label}</p>
+                </div>
+              ))}
+            </div>
+            <Card>
+              <FieldLabel>Olay Tipi Dağılımı</FieldLabel>
+              {OLAY_TIPLERI.map(t=>{
+                const count=tipStats[t.id]||0;
+                const max=Math.max(...Object.values(tipStats),1);
+                return (
+                  <div key={t.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}>
+                    <span style={{fontSize:12,color:"var(--txm)",width:120,flexShrink:0}}>{t.icon} {t.label}</span>
+                    <div style={{flex:1,height:5,background:"var(--s3)",borderRadius:3,overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${count/max*100}%`,background:"var(--violet)",borderRadius:3,transition:"width .4s"}}/>
+                    </div>
+                    <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)",width:20,textAlign:"right"}}>{count}</span>
+                  </div>
+                );
+              })}
+            </Card>
+            {carpStats.length>0&&(
+              <Card accent="red">
+                <FieldLabel color="var(--red)">En Sık Bilişsel Çarpıtmalar</FieldLabel>
+                {carpStats.slice(0,6).map(([name,count])=>{
+                  const maxC=carpStats[0]?.[1]||1;
+                  return (
+                    <div key={name} style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}>
+                      <span style={{fontSize:12,color:"var(--txm)",width:120,flexShrink:0}}>{name}</span>
+                      <div style={{flex:1,height:5,background:"var(--s3)",borderRadius:3,overflow:"hidden"}}>
+                        <div style={{height:"100%",width:`${count/maxC*100}%`,background:"var(--red)",borderRadius:3,transition:"width .4s"}}/>
+                      </div>
+                      <span style={{fontFamily:"var(--fm)",fontSize:11,color:"var(--txd)",width:20,textAlign:"right"}}>{count}</span>
+                    </div>
+                  );
+                })}
+              </Card>
+            )}
+          </div>
+        )
+      )}
     </div>
   );
 }
@@ -956,17 +1235,6 @@ function MindJournal() {
 // ════════════════════════════════════════════════════════
 //  TAB 5 — PROGRESS
 // ════════════════════════════════════════════════════════
-const genDemoData = () => {
-  const days = lastNDays(84), data = {};
-  days.forEach((d,i)=>{
-    const we = [0,6].includes(new Date(d).getDay());
-    const rec = i>70;
-    const r = Math.random();
-    data[d] = rec ? (r>.15?Math.floor(r*3)+2:0) : we ? (r>.6?Math.floor(r*2)+1:0) : (r>.35?Math.floor(r*4)+1:0);
-  });
-  return data;
-};
-
 const cellC = (s) => ["var(--s3)","rgba(201,168,76,.16)","rgba(201,168,76,.35)","rgba(201,168,76,.58)","rgba(201,168,76,.88)"][Math.min(s,4)];
 
 function StreakCalendar({ dayData }) {
@@ -982,11 +1250,11 @@ function StreakCalendar({ dayData }) {
   return (
     <div>
       <div style={{display:"flex",marginBottom:6,paddingLeft:26}}>
-        {weeks.map((_,wi)=>{const ml=mLabels.find(m=>m.wi===wi);return(<div key={wi} style={{flex:1,fontSize:9,fontFamily:"var(--fm)",color:ml?"var(--txd)":"transparent",letterSpacing:"0.06em"}}>{ml?.lbl||"·"}</div>);})}
+        {weeks.map((_,wi)=>{const ml=mLabels.find(m=>m.wi===wi);return(<div key={wi} style={{flex:1,fontSize:10,fontFamily:"var(--fm)",color:ml?"var(--txd)":"transparent",letterSpacing:"0.06em"}}>{ml?.lbl||"·"}</div>);})}
       </div>
       <div style={{display:"flex",gap:2}}>
         <div style={{display:"flex",flexDirection:"column",gap:2,marginRight:4}}>
-          {TR.map(d=><div key={d} style={{height:12,fontSize:8,fontFamily:"var(--fm)",color:"var(--txd)",display:"flex",alignItems:"center"}}>{d}</div>)}
+          {TR.map(d=><div key={d} style={{height:12,fontSize:9,fontFamily:"var(--fm)",color:"var(--txd)",display:"flex",alignItems:"center"}}>{d}</div>)}
         </div>
         {weeks.map((week,wi)=>(
           <div key={wi} style={{display:"flex",flexDirection:"column",gap:2,flex:1}}>
@@ -1006,9 +1274,9 @@ function StreakCalendar({ dayData }) {
         </div>
       )}
       <div style={{marginTop:10,display:"flex",alignItems:"center",gap:5,justifyContent:"flex-end"}}>
-        <span style={{fontSize:9,fontFamily:"var(--fm)",color:"var(--txd)"}}>az</span>
+        <span style={{fontSize:10,fontFamily:"var(--fm)",color:"var(--txd)"}}>az</span>
         {[0,1,2,3,4].map(s=><div key={s} style={{width:11,height:11,borderRadius:2,background:cellC(s)}}/>)}
-        <span style={{fontSize:9,fontFamily:"var(--fm)",color:"var(--txd)"}}>çok</span>
+        <span style={{fontSize:10,fontFamily:"var(--fm)",color:"var(--txd)"}}>çok</span>
       </div>
     </div>
   );
@@ -1083,7 +1351,7 @@ function Progress({ xp, streak }) {
             </svg>
             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
               <span style={{fontFamily:"var(--fd)",fontSize:30,fontWeight:600,color:"var(--gold)"}}>{lvl}</span>
-              <span style={{fontFamily:"var(--fm)",fontSize:8,color:"var(--txd)",letterSpacing:"0.1em"}}>LEVEL</span>
+              <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.1em"}}>LEVEL</span>
             </div>
           </div>
           <p style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--gold)",letterSpacing:"0.1em"}}>{lvlTitle(lvl).toUpperCase()}</p>
@@ -1105,7 +1373,7 @@ function Progress({ xp, streak }) {
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
           {[{label:"Aktif Gün",val:totalDays,c:"var(--gold)"},{label:"Kusursuz",val:perfectDays,c:"var(--green)"},{label:"🔥 Seri",val:`${streak} gün`,c:"var(--violet)"}].map(s=>(
             <div key={s.label}>
-              <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:2}}>{s.label}</p>
+              <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:2}}>{s.label}</p>
               <p style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:600,color:s.c}}>{s.val}</p>
             </div>
           ))}
@@ -1114,15 +1382,15 @@ function Progress({ xp, streak }) {
 
       {/* Calendar */}
       <div className="fu1" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"24px 28px",marginBottom:18}}>
-        <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>84 Günlük Aktivite</p>
+        <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>84 Günlük Aktivite</p>
         <StreakCalendar dayData={dayData}/>
       </div>
 
       {/* Bottom grid */}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
+      <div className="grid-2col" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18}}>
         {/* Habits breakdown */}
         <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px 24px"}}>
-          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Alışkanlık Oranı (84 gün)</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Alışkanlık Oranı (84 gün)</p>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             {HABITS_STAT.map((h,i)=>(
               <div key={h.label} style={{animationDelay:`${i*.08}s`}}>
@@ -1139,7 +1407,7 @@ function Progress({ xp, streak }) {
         </div>
         {/* Milestones */}
         <div className="fu2" style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:16,padding:"22px 24px"}}>
-          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Kilometre Taşları</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:18}}>Kilometre Taşları</p>
           <div style={{position:"relative",marginBottom:20}}>
             <div style={{height:2,background:"var(--s3)",borderRadius:1}}/>
             <div className="bgrow" style={{position:"absolute",top:0,left:0,height:2,background:"var(--gold)",borderRadius:1,width:`${Math.min(xp/maxM*100,100)}%`,animationDelay:".4s"}}/>
@@ -1221,14 +1489,14 @@ function EditLogModal({ entry, habits, morning, onSave, onClose }) {
           <button onClick={onClose} style={{background:'transparent',border:'none',cursor:'pointer',color:'var(--txd)',fontSize:18}}>✕</button>
         </div>
         <div style={{marginBottom:20}}>
-          <p style={{fontSize:9,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--txd)',fontFamily:'var(--fm)',marginBottom:10}}>Sabah Ritüeli</p>
+          <p style={{fontSize:10,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--txd)',fontFamily:'var(--fm)',marginBottom:10}}>Sabah Ritüeli</p>
           <div style={{display:'flex',flexDirection:'column',gap:7}}>
             {morning.map(item => {
               const d = !!mDone[item.id];
               return (
                 <div key={item.id} onClick={()=>setMD(p=>({...p,[item.id]:!p[item.id]}))} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:9,cursor:'pointer',background:d?'var(--amber-s)':'var(--s2)',border:`1px solid ${d?'var(--amber-m)':'var(--b)'}`,transition:'all .2s'}}>
                   <div style={{width:15,height:15,borderRadius:3,flexShrink:0,border:`1.5px solid ${d?'var(--amber)':'var(--txd)'}`,background:d?'var(--amber)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#080809" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" style={{stroke:"var(--bg)"}} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
                   <span style={{fontSize:13,color:d?'var(--txm)':'var(--tx)'}}>{item.text}</span>
                 </div>
@@ -1237,7 +1505,7 @@ function EditLogModal({ entry, habits, morning, onSave, onClose }) {
           </div>
         </div>
         <div style={{marginBottom:24}}>
-          <p style={{fontSize:9,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--txd)',fontFamily:'var(--fm)',marginBottom:10}}>Alışkanlıklar</p>
+          <p style={{fontSize:10,letterSpacing:'0.14em',textTransform:'uppercase',color:'var(--txd)',fontFamily:'var(--fm)',marginBottom:10}}>Alışkanlıklar</p>
           <div style={{display:'flex',flexDirection:'column',gap:7}}>
             {habits.map(h => {
               const d = !!hDone[h.id];
@@ -1245,7 +1513,7 @@ function EditLogModal({ entry, habits, morning, onSave, onClose }) {
               return (
                 <div key={h.id} onClick={()=>setHD(p=>({...p,[h.id]:!p[h.id]}))} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:9,cursor:'pointer',background:d?`${c}08`:'var(--s2)',border:`1px solid ${d?`${c}22`:'var(--b)'}`,transition:'all .2s'}}>
                   <div style={{width:15,height:15,borderRadius:3,flexShrink:0,border:`1.5px solid ${d?c:'var(--txd)'}`,background:d?c:'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" stroke="#080809" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    {d&&<svg width="9" height="7" viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6 8 1" style={{stroke:"var(--bg)"}} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                   </div>
                   <span style={{fontSize:13,color:d?'var(--txm)':'var(--tx)'}}>{h.text}</span>
                 </div>
@@ -1271,13 +1539,13 @@ function LogCard({ entry, habits, morning, expanded, onToggle, onEdit }) {
         {/* Score ring */}
         <div style={{width:42,height:42,borderRadius:"50%",flexShrink:0,border:`2px solid ${sc}`,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:`${sc}08`}}>
           <span style={{fontFamily:"var(--fd)",fontSize:14,fontWeight:600,color:sc,lineHeight:1}}>{entry.dayScore}</span>
-          <span style={{fontSize:7,color:sc,fontFamily:"var(--fm)",letterSpacing:"0.06em"}}>puan</span>
+          <span style={{fontSize:8,color:sc,fontFamily:"var(--fm)",letterSpacing:"0.06em"}}>puan</span>
         </div>
         {/* Date + habit dots */}
         <div style={{flex:1,minWidth:0}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5}}>
             <span style={{fontFamily:"var(--fb)",fontSize:13,fontWeight:500,color:"var(--tx)"}}>{fmtShort(entry.date)}</span>
-            <span style={{fontSize:9,padding:"2px 7px",borderRadius:8,background:`${sc}10`,color:sc,fontFamily:"var(--fm)",letterSpacing:"0.08em"}}>{scoreLbl(entry.dayScore)}</span>
+            <span style={{fontSize:10,padding:"2px 7px",borderRadius:8,background:`${sc}10`,color:sc,fontFamily:"var(--fm)",letterSpacing:"0.08em"}}>{scoreLbl(entry.dayScore)}</span>
             {entry.streak>0&&<span style={{fontSize:11,color:"var(--gold)",fontFamily:"var(--fm)"}}>🔥 {entry.streak}</span>}
           </div>
           <div style={{display:"flex",gap:5}}>
@@ -1291,7 +1559,7 @@ function LogCard({ entry, habits, morning, expanded, onToggle, onEdit }) {
           {[{l:"Seans",v:entry.sessions,c:"var(--violet)"},{l:"+XP",v:`+${entry.xpGained}`,c:"var(--gold)"},{l:"Journal",v:entry.answeredQs?.length||0,c:"var(--rose)"}].map(s=>(
             <div key={s.l} style={{textAlign:"center"}}>
               <p style={{fontFamily:"var(--fm)",fontSize:13,color:s.c}}>{s.v}</p>
-              <p style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)",letterSpacing:"0.08em"}}>{s.l}</p>
+              <p style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",letterSpacing:"0.08em"}}>{s.l}</p>
             </div>
           ))}
           <button onClick={e=>{e.stopPropagation();onEdit(entry);}} title="Düzenle" style={{background:'transparent',border:'1px solid var(--b)',borderRadius:6,cursor:'pointer',color:'var(--txd)',fontSize:11,padding:'3px 8px',transition:'all .2s'}}>✎</button>
@@ -1304,7 +1572,7 @@ function LogCard({ entry, habits, morning, expanded, onToggle, onEdit }) {
           <p style={{fontSize:10,color:"var(--txd)",fontFamily:"var(--fm)",letterSpacing:"0.1em",marginBottom:14}}>{fmtLong(entry.date)}</p>
           {/* Habits */}
           <div style={{marginBottom:14}}>
-            <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Alışkanlıklar</p>
+            <p style={{fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Alışkanlıklar</p>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               {habits.map(h=>{
                 const done = entry.habits?.includes(h.text);
@@ -1315,7 +1583,7 @@ function LogCard({ entry, habits, morning, expanded, onToggle, onEdit }) {
           </div>
           {/* Morning */}
           <div style={{marginBottom:14}}>
-            <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Sabah Ritüeli</p>
+            <p style={{fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Sabah Ritüeli</p>
             <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
               {morning.map(i=>{
                 const done = entry.morning?.includes(i.text);
@@ -1326,11 +1594,11 @@ function LogCard({ entry, habits, morning, expanded, onToggle, onEdit }) {
           {/* Sessions */}
           {entry.sessions>0&&(
             <div style={{marginBottom:14}}>
-              <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Derin Odak</p>
+              <p style={{fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Derin Odak</p>
               <div style={{display:"flex",gap:6,alignItems:"center"}}>
                 {Array.from({length:Math.min(entry.sessions,12)}).map((_,i)=>(
                   <div key={i} style={{width:22,height:22,borderRadius:6,background:"var(--violet-s)",border:"1px solid rgba(124,92,191,.25)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <span style={{fontSize:9,color:"var(--violet)"}}>◉</span>
+                    <span style={{fontSize:10,color:"var(--violet)"}}>◉</span>
                   </div>
                 ))}
                 <span style={{fontSize:12,color:"var(--txm)",fontFamily:"var(--fm)",marginLeft:4}}>{entry.sessions} seans</span>
@@ -1340,11 +1608,11 @@ function LogCard({ entry, habits, morning, expanded, onToggle, onEdit }) {
           {/* Journal */}
           {entry.answeredQs?.length>0&&(
             <div style={{marginBottom:14}}>
-              <p style={{fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Yanıtlanan Sorular</p>
+              <p style={{fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",fontFamily:"var(--fm)",marginBottom:8}}>Yanıtlanan Sorular</p>
               <div style={{display:"flex",flexDirection:"column",gap:5}}>
                 {entry.answeredQs.map(qId=>(
                   <div key={qId} style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{width:16,height:16,borderRadius:4,background:"var(--rose-s)",border:"1px solid rgba(184,92,110,.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,color:"var(--rose)",flexShrink:0}}>{qId}</span>
+                    <span style={{width:16,height:16,borderRadius:4,background:"var(--rose-s)",border:"1px solid rgba(184,92,110,.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:"var(--rose)",flexShrink:0}}>{qId}</span>
                     <span style={{fontSize:12,color:"var(--txm)",fontStyle:"italic"}}>{AP_LABELS[qId]}</span>
                   </div>
                 ))}
@@ -1375,7 +1643,7 @@ function LogSummary({ logs }) {
   const totalXp = logs.reduce((s,e)=>s+(e.xpGained||0),0);
   const jDays   = logs.filter(e=>e.answeredQs?.length>0).length;
   return (
-    <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:20}}>
+    <div className="log-summary-grid" style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:12,marginBottom:20}}>
       {[
         {label:"Ort. Skor",    val:avg,         color:scoreClr(avg),  sub:`${logs.length} günden`},
         {label:"Kusursuz Gün", val:perfect,      color:"var(--gold)",  sub:"100 puan"},
@@ -1384,7 +1652,7 @@ function LogSummary({ logs }) {
         {label:"Journal Günü", val:jDays,        color:"var(--rose)",  sub:"soru yanıtlandı"},
       ].map(s=>(
         <div key={s.label} style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:12,padding:"14px 16px"}}>
-          <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:5}}>{s.label}</p>
+          <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",color:"var(--txd)",marginBottom:5}}>{s.label}</p>
           <p style={{fontFamily:"var(--fd)",fontSize:24,fontWeight:600,color:s.color}}>{s.val}</p>
           <p style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)",marginTop:2}}>{s.sub}</p>
         </div>
@@ -1399,7 +1667,7 @@ function ScoreTrend({ logs }) {
   const max = 100;
   return (
     <div style={{background:"var(--s1)",border:"1px solid var(--b)",borderRadius:14,padding:"16px 20px",marginBottom:18}}>
-      <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:12}}>Son 14 Günün Skor Trendi</p>
+      <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)",marginBottom:12}}>Son 14 Günün Skor Trendi</p>
       <div style={{display:"flex",alignItems:"flex-end",gap:4,height:48}}>
         {recent.map((e,i)=>{
           const h = Math.max((e.dayScore/max)*48,3);
@@ -1410,8 +1678,8 @@ function ScoreTrend({ logs }) {
         })}
       </div>
       <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
-        <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)"}}>{fmtShort(recent[0]?.date)}</span>
-        <span style={{fontFamily:"var(--fm)",fontSize:9,color:"var(--txd)"}}>{fmtShort(recent[recent.length-1]?.date)}</span>
+        <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>{fmtShort(recent[0]?.date)}</span>
+        <span style={{fontFamily:"var(--fm)",fontSize:10,color:"var(--txd)"}}>{fmtShort(recent[recent.length-1]?.date)}</span>
       </div>
     </div>
   );
@@ -1455,7 +1723,7 @@ function Logs({ habits=[], morning=[] }) {
       <div className="fu"><LogSummary logs={logs}/></div>
       <div className="fu1"><ScoreTrend logs={logs}/></div>
       <div className="fu1" style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-        <p style={{fontFamily:"var(--fm)",fontSize:9,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)"}}>{filtered.length} kayıt</p>
+        <p style={{fontFamily:"var(--fm)",fontSize:10,letterSpacing:"0.14em",textTransform:"uppercase",color:"var(--txd)"}}>{filtered.length} kayıt</p>
         <div style={{display:"flex",gap:6}}>
           {[{k:"all",l:"Tümü"},{k:"good",l:"≥70 puan"},{k:"perfect",l:"Kusursuz"}].map(f=>(
             <button key={f.k} onClick={()=>setFilter(f.k)} style={{fontFamily:"var(--fm)",fontSize:11,padding:"4px 12px",borderRadius:14,border:`1px solid ${filter===f.k?"var(--gold)":"var(--b)"}`,background:filter===f.k?"var(--gold-s)":"transparent",color:filter===f.k?"var(--gold)":"var(--txd)",cursor:"pointer",transition:"all .2s"}}>{f.l}</button>
@@ -1483,42 +1751,54 @@ function Logs({ habits=[], morning=[] }) {
 // ════════════════════════════════════════════════════════
 const IdentityBanner = ({ stmt }) => !stmt ? null : (
   <div style={{borderBottom:"1px solid var(--b)",padding:"8px 28px",background:"rgba(201,168,76,.02)",display:"flex",alignItems:"center",gap:10}}>
-    <span style={{fontSize:9,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase",flexShrink:0,fontFamily:"var(--fm)"}}>Ben</span>
-    <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"rgba(221,216,207,.55)",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{stmt}</p>
+    <span style={{fontSize:10,color:"var(--gold)",letterSpacing:"0.12em",textTransform:"uppercase",flexShrink:0,fontFamily:"var(--fm)"}}>Ben</span>
+    <p style={{fontFamily:"var(--fd)",fontSize:14,fontStyle:"italic",color:"var(--txm)",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>{stmt}</p>
   </div>
 );
 
 // ════════════════════════════════════════════════════════
+//  HUB'LAR — Progress+Loglar ve Identity+North Star birleşik sekmeler
+// ════════════════════════════════════════════════════════
+const hubPill = (active, color) => ({fontFamily:"var(--fm)",fontSize:11,padding:"6px 14px",borderRadius:14,border:`1px solid ${active?color:"var(--b)"}`,background:active?"var(--gold-s)":"transparent",color:active?color:"var(--txd)",cursor:"pointer",transition:"all .2s"});
+
+function ProgressHub({ xp, streak, habits, morning }){
+  const [v,setV]=useState('stats');
+  return (
+    <div>
+      <div style={{display:"flex",gap:6,marginBottom:22}}>
+        {[{k:'stats',l:'İstatistik'},{k:'logs',l:'Loglar'}].map(o=>(
+          <button key={o.k} onClick={()=>setV(o.k)} style={hubPill(v===o.k,"var(--gold)")}>{o.l}</button>
+        ))}
+      </div>
+      {v==='stats'?<Progress xp={xp} streak={streak}/>:<Logs habits={habits} morning={morning}/>}
+    </div>
+  );
+}
+
+function IdentityHub({ identity, setIdentity, northStar, setNS }){
+  const [v,setV]=useState('kimlik');
+  return (
+    <div>
+      <div style={{display:"flex",gap:6,marginBottom:22,justifyContent:"center"}}>
+        {[{k:'kimlik',l:'Kimlik'},{k:'northstar',l:'North Star'}].map(o=>(
+          <button key={o.k} onClick={()=>setV(o.k)} style={hubPill(v===o.k,"var(--gold)")}>{o.l}</button>
+        ))}
+      </div>
+      {v==='kimlik'?<IdentityCore data={identity} onChange={setIdentity}/>:<NorthStar data={northStar} onChange={setNS}/>}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════
 //  MAIN APP
 // ════════════════════════════════════════════════════════
-const OLAY_TIPLERI = [
-  { id: 'duygusal', label: 'Duygusal Tepki', icon: '⚡' },
-  { id: 'hedef', label: 'Hedef Sapması', icon: '🎯' },
-  { id: 'karar', label: 'Karar Anı', icon: '⚖️' },
-  { id: 'davranis', label: 'Davranış Kalıbı', icon: '🔄' },
-];
-
-const CARPITMALAR = [
-  'Felaketleştirme',
-  'Siyah-beyaz düşünce',
-  'Zihin okuma',
-  'Aşırı genelleme',
-  'Duygusal muhakeme',
-  '"Yapmalıyım" tuzağı',
-  'Kişiselleştirme',
-  'Küçümseme',
-  'Filtreleme',
-];
-
 const TABS = [
   {key:"daily",    label:"Daily OS",       icon:"◎"},
-  {key:"identity", label:"Identity",       icon:"◈"},
-  {key:"northstar",label:"North Star",     icon:"◉"},
   {key:"journal",  label:"Mind Journal",   icon:"◇"},
+  {key:"review",   label:"Review",         icon:"◑"},
   {key:"progress", label:"Progress",       icon:"◆"},
   {key:"breaker",  label:"Breaker",        icon:"⛓"},
-  {key:"logs",     label:"Loglar",         icon:"◌"},
-  {key:"metac",    label:"Metacognition",  icon:"◑"},
+  {key:"identity", label:"Identity",       icon:"◈"},
 ];
 // Alt bar'da yalnızca en sık kullanılan sekmeler; gerisi "Daha" panelinde
 const PRIMARY_TAB_KEYS = ["daily","journal","breaker","progress"];
@@ -1529,6 +1809,7 @@ export default function App() {
   const [northStar, setNS]      = useState(DEF_NORTHSTAR);
   const [morningDone, setMD]    = useState({});
   const [habitsDone, setHD]     = useState({});
+  const [xpGranted, setXpG]     = useState({});
   const [streak, setStreak]     = useState(0);
   const [xp, setXp]             = useState(0);
   const [level, setLevel]       = useState(1);
@@ -1542,18 +1823,6 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('os_theme', theme);
   }, [theme]);
-  const [metacEvents, setMetacEvents] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('metac_events') || '[]'); } catch { return []; }
-  });
-  const [checkIns, setCheckIns] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('checkins') || '[]'); } catch { return []; }
-  });
-  const [metacView, setMetacView] = useState('kayit');
-  const [eventForm, setEventForm] = useState({
-    type: '', olay: '', dusunce: '', carpitmalar: [], cerceve: '', yogunluk: 3
-  });
-  const [checkinForm, setCheckinForm] = useState({ his: '', engel: '', adim: '' });
-  const [showEventSuccess, setShowEventSuccess] = useState(false);
   const saveT                   = useRef(null);
 
   /* ── Load ── */
@@ -1564,15 +1833,11 @@ export default function App() {
       const td  = await store.get(`theos_daily_${todayKey()}`);
       const st  = await store.get("theos_streak");
       const xpv = await store.get("theos_xp");
-      const me  = await store.get("metac_events");
-      const ci  = await store.get("checkins");
       if(id) setIdentity(id);
       if(ns) setNS(ns);
-      if(td){ setMD(td.morningDone||{}); setHD(td.habitsDone||{}); }
+      if(td){ setMD(td.morningDone||{}); setHD(td.habitsDone||{}); setXpG(td.xpGranted||{}); }
       if(st) setStreak(st);
       if(xpv!=null){ setXp(xpv); setLevel(levelFromXp(xpv)); }
-      if(Array.isArray(me)) setMetacEvents(me);
-      if(Array.isArray(ci)) setCheckIns(ci);
       setLoaded(true);
     })();
   },[]);
@@ -1585,12 +1850,12 @@ export default function App() {
     saveT.current = setTimeout(async()=>{
       await store.set("theos_identity",identity);
       await store.set("theos_northstar",northStar);
-      await store.set(`theos_daily_${todayKey()}`,{morningDone,habitsDone});
+      await store.set(`theos_daily_${todayKey()}`,{morningDone,habitsDone,xpGranted});
       await store.set("theos_streak",streak);
       await store.set("theos_xp",xp);
       setSaved(true);
     },700);
-  },[identity,northStar,morningDone,habitsDone,streak,xp,loaded]);
+  },[identity,northStar,morningDone,habitsDone,xpGranted,streak,xp,loaded]);
 
   /* ── Level up ── */
   useEffect(()=>{
@@ -1602,8 +1867,8 @@ export default function App() {
   const toggleHabit   = (id) => {
     const was = !!habitsDone[id];
     setHD(p=>({...p,[id]:!p[id]}));
-    // XP sadece false→true geçişinde verilir, geri alımda düşmez
-    if(!was) setXp(x=>x+50);
+    // XP gün içinde alışkanlık başına yalnızca bir kez verilir (aç/kapa ile farm edilemez)
+    if(!was && !xpGranted[id]){ setXp(x=>x+50); setXpG(p=>({...p,[id]:true})); }
   };
   const handleEndDay = async () => {
     const today  = todayKey();
@@ -1613,10 +1878,22 @@ export default function App() {
     const hScore = DEF_HABITS.length  ? Math.round(DEF_HABITS.filter(h=>habitsDone[h.id]).length/DEF_HABITS.length*100)   : 0;
     const dayScore = Math.round((mScore+hScore)/2);
 
+    // Seri: skor 70+ ise sürer; araya gün girmişse 1'den başlar; 70 altındaysa sıfırlanır
+    const existing = await store.get("theos_logs") || [];
+    const lastLog  = existing.find(e=>e.date!==today);
+    let newStreak = 0;
+    if(dayScore>=70){
+      if(lastLog){
+        const gapDays = Math.round((new Date(today) - new Date(lastLog.date))/86400000);
+        newStreak = gapDays<=1 ? (lastLog.streak||0)+1 : 1;
+      } else newStreak = 1;
+    }
+    setStreak(newStreak);
+
     let xpGained = 0;
-    let newStreak = streak;
-    if(allM&&allH){ xpGained=150; newStreak=streak+1; setStreak(newStreak); }
-    else if(allH||allM){ xpGained=50; }
+    if(allM&&allH) xpGained=150;
+    else if(dayScore>=70) xpGained=75;
+    else if(allH||allM) xpGained=50;
     xpGained += sessions*50;
     if(xpGained>0) setXp(x=>x+xpGained);
 
@@ -1636,54 +1913,10 @@ export default function App() {
       streak:    newStreak,
       timestamp: new Date().toISOString(),
     };
-    const existing = await store.get("theos_logs") || [];
     await store.set("theos_logs", [entry, ...existing.filter(e=>e.date!==today)].slice(0,90));
 
     // Sıfırla
-    setMD({}); setHD({}); setSessions(0);
-  };
-
-  const saveMetacEvent = () => {
-    if (!eventForm.type || !eventForm.olay || !eventForm.dusunce) return;
-    const newEvent = { id: Date.now(), date: new Date().toISOString(), ...eventForm };
-    const updated = [newEvent, ...metacEvents];
-    setMetacEvents(updated);
-    store.set('metac_events', updated);
-    setEventForm({ type: '', olay: '', dusunce: '', carpitmalar: [], cerceve: '', yogunluk: 3 });
-    setShowEventSuccess(true);
-    setTimeout(() => setShowEventSuccess(false), 2500);
-  };
-
-  const saveCheckIn = () => {
-    if (!checkinForm.his) return;
-    const newCI = { id: Date.now(), date: new Date().toISOString(), ...checkinForm };
-    const updated = [newCI, ...checkIns];
-    setCheckIns(updated);
-    store.set('checkins', updated);
-    setCheckinForm({ his: '', engel: '', adim: '' });
-  };
-
-  const getCarpitmaStats = () => {
-    const counts = {};
-    metacEvents.forEach(e => e.carpitmalar?.forEach(c => { counts[c] = (counts[c] || 0) + 1; }));
-    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  };
-
-  const getOlayTipStats = () => {
-    const counts = { duygusal: 0, hedef: 0, karar: 0, davranis: 0 };
-    metacEvents.forEach(e => { if (counts[e.type] !== undefined) counts[e.type]++; });
-    return counts;
-  };
-
-  const getLast7DaysCheckIns = () => {
-    const now = new Date();
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(now);
-      d.setDate(now.getDate() - (6 - i));
-      const dateStr = d.toISOString().split('T')[0];
-      const ci = checkIns.find(c => c.date.startsWith(dateStr));
-      return { date: dateStr, label: d.toLocaleDateString('tr-TR', { weekday: 'short' }), ci };
-    });
+    setMD({}); setHD({}); setXpG({}); setSessions(0);
   };
 
   const activeTab = TABS.find(t=>t.key===tab);
@@ -1754,317 +1987,12 @@ export default function App() {
 
         {/* ── Content ── */}
         <main className="main-pad" style={{maxWidth:940,margin:"0 auto",padding:"32px 24px 80px"}}>
-          {tab==="identity"  && <IdentityCore data={identity} onChange={setIdentity}/>}
-          {tab==="northstar" && <NorthStar data={northStar} onChange={setNS}/>}
           {tab==="daily"     && <DailyOS morningItems={DEF_MORNING} morningDone={morningDone} onToggleMorning={toggleMorning} habits={DEF_HABITS} habitsDone={habitsDone} onToggleHabit={toggleHabit} streak={streak} onEndDay={handleEndDay} xp={xp} setXp={setXp} sessions={sessions} setSessions={setSessions} focusText={focusText} setFocusText={setFocusText}/>}
           {tab==="journal"   && <MindJournal/>}
-          {tab==="progress"  && <Progress xp={xp} streak={streak}/>}
+          {tab==="review"    && <WeeklyReview/>}
+          {tab==="progress"  && <ProgressHub xp={xp} streak={streak} habits={DEF_HABITS} morning={DEF_MORNING}/>}
           {tab==="breaker"   && <Breaker setXp={setXp}/>}
-          {tab==="logs"      && <Logs habits={DEF_HABITS} morning={DEF_MORNING}/>}
-          {tab==="metac" && (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-    <div>
-      <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.8rem', color: 'var(--gold)', marginBottom: '0.25rem' }}>
-        Metacognition
-      </h2>
-      <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', color: 'var(--zinc-400)' }}>
-        Düşünceni gözlemle. Kalıpları gör. Yeniden çerçevele.
-      </p>
-    </div>
-
-    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-      {[
-        { id: 'kayit', label: 'Olay Kaydı' },
-        { id: 'checkin', label: 'Check-in' },
-        { id: 'oruntu', label: 'Örüntüler' },
-        { id: 'review', label: 'Haftalık Review' },
-      ].map(v => (
-        <button key={v.id} onClick={() => setMetacView(v.id)} style={{
-          padding: '0.4rem 1rem',
-          borderRadius: '999px',
-          border: metacView === v.id ? '1px solid var(--gold)' : '1px solid var(--zinc-700)',
-          background: metacView === v.id ? 'var(--gold)' : 'transparent',
-          color: metacView === v.id ? 'var(--zinc-900)' : 'var(--zinc-300)',
-          fontFamily: 'DM Sans, sans-serif',
-          fontSize: '0.8rem',
-          cursor: 'pointer',
-          fontWeight: metacView === v.id ? 700 : 400,
-        }}>{v.label}</button>
-      ))}
-    </div>
-
-    {metacView === 'kayit' && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-700)', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-          <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: 'var(--zinc-200)', marginBottom: 0 }}>Yeni Olay Kaydı</p>
-
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {OLAY_TIPLERI.map(t => (
-              <button key={t.id} onClick={() => setEventForm(f => ({ ...f, type: t.id }))} style={{
-                padding: '0.35rem 0.8rem',
-                borderRadius: '8px',
-                border: eventForm.type === t.id ? '1px solid var(--gold)' : '1px solid var(--zinc-700)',
-                background: eventForm.type === t.id ? 'rgba(212,175,55,0.15)' : 'transparent',
-                color: eventForm.type === t.id ? 'var(--gold)' : 'var(--zinc-400)',
-                fontFamily: 'DM Sans, sans-serif',
-                fontSize: '0.78rem',
-                cursor: 'pointer',
-              }}>{t.icon} {t.label}</button>
-            ))}
-          </div>
-
-          <div>
-            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>Ne oldu?</label>
-            <textarea value={eventForm.olay} onChange={e => setEventForm(f => ({ ...f, olay: e.target.value }))}
-              placeholder="Durumu kısaca anlat..." rows={2}
-              style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
-          </div>
-
-          <div>
-            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>İlk düşüncem / tepkim ne oldu?</label>
-            <textarea value={eventForm.dusunce} onChange={e => setEventForm(f => ({ ...f, dusunce: e.target.value }))}
-              placeholder="Aklından geçenleri yaz..." rows={2}
-              style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
-          </div>
-
-          <div>
-            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.5rem' }}>Bilişsel çarpıtma var mı? (varsa işaretle)</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-              {CARPITMALAR.map(c => {
-                const selected = eventForm.carpitmalar.includes(c);
-                return (
-                  <button key={c} onClick={() => setEventForm(f => ({
-                    ...f,
-                    carpitmalar: selected ? f.carpitmalar.filter(x => x !== c) : [...f.carpitmalar, c]
-                  }))} style={{
-                    padding: '0.25rem 0.65rem',
-                    borderRadius: '999px',
-                    border: selected ? '1px solid #e05252' : '1px solid var(--zinc-700)',
-                    background: selected ? 'rgba(224,82,82,0.15)' : 'transparent',
-                    color: selected ? '#e05252' : 'var(--zinc-500)',
-                    fontFamily: 'DM Sans, sans-serif',
-                    fontSize: '0.72rem',
-                    cursor: 'pointer',
-                  }}>{c}</button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>
-              Duygusal yoğunluk: <span style={{ color: 'var(--gold)', fontFamily: 'DM Mono, monospace' }}>{eventForm.yogunluk}/5</span>
-            </label>
-            <input type="range" min={1} max={5} value={eventForm.yogunluk}
-              onChange={e => setEventForm(f => ({ ...f, yogunluk: Number(e.target.value) }))}
-              style={{ width: '100%', accentColor: 'var(--gold)' }} />
-          </div>
-
-          <div>
-            <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>Daha gerçekçi / dengeli bir bakış ne olurdu?</label>
-            <textarea value={eventForm.cerceve} onChange={e => setEventForm(f => ({ ...f, cerceve: e.target.value }))}
-              placeholder="Alternatif perspektif..." rows={2}
-              style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
-          </div>
-
-          <button onClick={saveMetacEvent} style={{
-            padding: '0.65rem 1.5rem', background: 'var(--gold)', border: 'none', borderRadius: '8px',
-            color: 'var(--zinc-900)', fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
-            fontSize: '0.85rem', cursor: 'pointer', alignSelf: 'flex-start',
-          }}>Kaydet</button>
-
-          {showEventSuccess && (
-            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: '#4ade80' }}>✓ Olay kaydedildi.</p>
-          )}
-        </div>
-
-        {metacEvents.length > 0 && (
-          <div>
-            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', marginBottom: '0.8rem' }}>Son olaylar</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {metacEvents.slice(0, 5).map(ev => {
-                const tip = OLAY_TIPLERI.find(t => t.id === ev.type);
-                return (
-                  <div key={ev.id} style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '10px', padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--gold)' }}>{tip?.icon} {tip?.label}</span>
-                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--zinc-600)' }}>
-                        {new Date(ev.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: 'var(--zinc-300)', margin: '0 0 0.3rem' }}>{ev.olay}</p>
-                    {ev.carpitmalar?.length > 0 && (
-                      <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
-                        {ev.carpitmalar.map(c => (
-                          <span key={c} style={{ padding: '0.15rem 0.5rem', borderRadius: '999px', background: 'rgba(224,82,82,0.1)', border: '1px solid rgba(224,82,82,0.3)', color: '#e05252', fontFamily: 'DM Sans, sans-serif', fontSize: '0.68rem' }}>{c}</span>
-                        ))}
-                      </div>
-                    )}
-                    {ev.cerceve && (
-                      <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#4ade80', marginTop: '0.5rem', borderLeft: '2px solid #4ade80', paddingLeft: '0.5rem' }}>
-                        {ev.cerceve}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    )}
-
-    {metacView === 'checkin' && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {getLast7DaysCheckIns().map(d => (
-            <div key={d.date} style={{ flex: 1, textAlign: 'center' }}>
-              <div style={{
-                width: '100%', aspectRatio: '1', borderRadius: '8px',
-                background: d.ci ? 'rgba(212,175,55,0.25)' : 'var(--zinc-800)',
-                border: d.ci ? '1px solid var(--gold)' : '1px solid var(--zinc-700)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1rem', marginBottom: '0.25rem',
-              }}>{d.ci ? '✓' : '·'}</div>
-              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.65rem', color: 'var(--zinc-500)' }}>{d.label}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-700)', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-          <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: 'var(--zinc-200)', marginBottom: 0 }}>
-            {new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })} Check-in
-          </p>
-
-          {[
-            { key: 'his', label: 'Şu an nasıl hissediyorsun?', placeholder: 'Düşünce, his, enerji seviyesi...' },
-            { key: 'engel', label: 'Seni durduran bir şey var mı?', placeholder: 'Bir korku, şüphe, erteleme...' },
-            { key: 'adim', label: 'Bir sonraki küçük adım ne?', placeholder: 'Somut, yapılabilir bir şey...' },
-          ].map(q => (
-            <div key={q.key}>
-              <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', display: 'block', marginBottom: '0.3rem' }}>{q.label}</label>
-              <textarea value={checkinForm[q.key]} onChange={e => setCheckinForm(f => ({ ...f, [q.key]: e.target.value }))}
-                placeholder={q.placeholder} rows={2}
-                style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
-            </div>
-          ))}
-
-          <button onClick={saveCheckIn} style={{
-            padding: '0.65rem 1.5rem', background: 'var(--gold)', border: 'none', borderRadius: '8px',
-            color: 'var(--zinc-900)', fontFamily: 'DM Sans, sans-serif', fontWeight: 700,
-            fontSize: '0.85rem', cursor: 'pointer', alignSelf: 'flex-start',
-          }}>Check-in Yap</button>
-        </div>
-
-        {checkIns.slice(0, 3).map(ci => (
-          <div key={ci.id} style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '10px', padding: '1rem' }}>
-            <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.7rem', color: 'var(--zinc-600)', marginBottom: '0.5rem' }}>
-              {new Date(ci.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-            </p>
-            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.82rem', color: 'var(--zinc-300)', margin: '0 0 0.25rem' }}>💭 {ci.his}</p>
-            {ci.engel && <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: 'var(--zinc-500)', margin: '0 0 0.25rem' }}>🧱 {ci.engel}</p>}
-            {ci.adim && <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.78rem', color: '#4ade80', margin: 0 }}>→ {ci.adim}</p>}
-          </div>
-        ))}
-      </div>
-    )}
-
-    {metacView === 'oruntu' && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {metacEvents.length === 0 ? (
-          <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', color: 'var(--zinc-500)', textAlign: 'center', padding: '3rem 0' }}>
-            Henüz kaydedilen olay yok. Olay Kaydı bölümünden başla.
-          </p>
-        ) : (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-              {[
-                { label: 'Toplam Olay', value: metacEvents.length },
-                { label: 'Check-in', value: checkIns.length },
-                { label: 'En çok çarpıtma', value: getCarpitmaStats()[0]?.[0]?.split(' ')[0] || '—' },
-                { label: 'Ort. Yoğunluk', value: metacEvents.length ? (metacEvents.reduce((a, e) => a + (e.yogunluk || 3), 0) / metacEvents.length).toFixed(1) : '—' },
-              ].map(s => (
-                <div key={s.label} style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '10px', padding: '1rem', textAlign: 'center' }}>
-                  <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '1.4rem', color: 'var(--gold)', margin: '0 0 0.2rem' }}>{s.value}</p>
-                  <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.72rem', color: 'var(--zinc-500)', margin: 0 }}>{s.label}</p>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '12px', padding: '1.2rem' }}>
-              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', marginBottom: '1rem' }}>Olay tipi dağılımı</p>
-              {OLAY_TIPLERI.map(t => {
-                const count = getOlayTipStats()[t.id] || 0;
-                const max = Math.max(...Object.values(getOlayTipStats()), 1);
-                return (
-                  <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
-                    <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-400)', width: '90px', flexShrink: 0 }}>{t.icon} {t.label}</span>
-                    <div style={{ flex: 1, height: '6px', background: 'var(--zinc-800)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${(count / max) * 100}%`, background: 'var(--gold)', borderRadius: '3px', transition: 'width 0.4s' }} />
-                    </div>
-                    <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--zinc-500)', width: '20px', textAlign: 'right' }}>{count}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {getCarpitmaStats().length > 0 && (
-              <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-800)', borderRadius: '12px', padding: '1.2rem' }}>
-                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.75rem', color: 'var(--zinc-500)', marginBottom: '1rem' }}>En sık görülen bilişsel çarpıtmalar</p>
-                {getCarpitmaStats().slice(0, 6).map(([name, count]) => {
-                  const maxC = getCarpitmaStats()[0]?.[1] || 1;
-                  return (
-                    <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
-                      <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.73rem', color: 'var(--zinc-400)', width: '96px', flexShrink: 0 }}>{name}</span>
-                      <div style={{ flex: 1, height: '6px', background: 'var(--zinc-800)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${(count / maxC) * 100}%`, background: '#e05252', borderRadius: '3px', transition: 'width 0.4s' }} />
-                      </div>
-                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '0.72rem', color: 'var(--zinc-500)', width: '20px', textAlign: 'right' }}>{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    )}
-
-    {metacView === 'review' && (
-      <div style={{ background: 'var(--zinc-900)', border: '1px solid var(--zinc-700)', borderRadius: '12px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.3rem', color: 'var(--gold)', marginBottom: 0 }}>Haftalık Metacognition Review</p>
-        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: 'var(--zinc-500)', marginTop: '-0.5rem' }}>
-          Bu hafta kaydettiğin {metacEvents.filter(e => {
-            const d = new Date(e.date);
-            const now = new Date();
-            const diff = (now - d) / (1000 * 60 * 60 * 24);
-            return diff <= 7;
-          }).length} olay var.
-        </p>
-
-        {[
-          { key: 'metaR1', label: 'Bu hafta hangi düşünce kalıbı en çok öne çıktı?' },
-          { key: 'metaR2', label: 'Bir olayda otopilottaydın — fark ettiğin an ne oldu?' },
-          { key: 'metaR3', label: 'Hangi çarpıtmayı tekrarlıyorsun? Kökeninde ne olabilir?' },
-          { key: 'metaR4', label: 'Gelecek hafta daha bilinçli olmak istediğin bir alan nedir?' },
-          { key: 'metaR5', label: 'Kendine adil bir tanık olabildin mi bu hafta?' },
-        ].map(q => {
-          const storageKey = `os_meta_review_${new Date().toISOString().slice(0, 10)}_${q.key}`;
-          const savedVal = localStorage.getItem(storageKey) || '';
-          return (
-            <div key={q.key}>
-              <label style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', color: 'var(--zinc-400)', display: 'block', marginBottom: '0.4rem' }}>{q.label}</label>
-              <textarea defaultValue={savedVal}
-                onBlur={e => localStorage.setItem(storageKey, e.target.value)}
-                rows={3}
-                style={{ width: '100%', background: 'var(--zinc-800)', border: '1px solid var(--zinc-700)', borderRadius: '8px', padding: '0.6rem 0.8rem', color: 'var(--zinc-200)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', resize: 'vertical', boxSizing: 'border-box' }} />
-            </div>
-          );
-        })}
-      </div>
-    )}
-  </div>
-)}
+          {tab==="identity"  && <IdentityHub identity={identity} setIdentity={setIdentity} northStar={northStar} setNS={setNS}/>}
         </main>
 
         {/* ── Mobile bottom tab bar (birincil sekmeler + Daha) ── */}
